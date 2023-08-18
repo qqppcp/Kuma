@@ -1,10 +1,31 @@
 #include "logger.h"
 #include "asserts.h"
+#include "platform/platform.h"
 
 // TODO: temporary
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <type_traits>
+#include <utility>
+
+template<typename T>
+struct item_return
+{
+    using type = T&&;
+};
+
+template<typename T>
+inline typename item_return<T>::type convert(T&& arg)
+{
+    return static_cast<T&&>(arg);
+}
+
+template<class... Args>
+void FormatLog(char* pBuff, int nBufferSize, const char* fmt, Args&&... args)
+{
+    snprintf(pBuff, nBufferSize, fmt, convert(std::forward<Args>(args))...);
+}
 
 b8 initialize_logging() {
     // TODO: create log file.
@@ -17,7 +38,7 @@ void shutdown_logging() {
 
 void log_output(log_level level, const char* message, ...) {
     const char* level_strings[6] = { "[FATAL]: ", "[ERROR]: ", "[WARN]:  ", "[INFO]:  ", "[DEBUG]: ", "[TRACE]: " };
-    // b8 is_error = level < 2;
+    b8 is_error = level < 2;
 
     // Technically imposes a 32k character limit on a single log entry, but...
     // DON'T DO THAT!
@@ -37,8 +58,16 @@ void log_output(log_level level, const char* message, ...) {
     sprintf(out_message2, "%s%s\n", level_strings[level], out_message);
 
     // TODO: platform-specific output.
-    printf("%s", out_message2);
+    if (is_error)
+    {
+        platform_console_write_error(out_message2, level);
+    }
+    else
+    {
+        platform_console_write(out_message2, level);
+    }
 }
+
 
 void report_assertion_failure(const char* expression, const char* message, const char* file, i32 line) {
     log_output(LOG_LEVEL_FATAL, "Assertion Failure: %s, message: '%s', in file: %s, line: %d\n", expression, message, file, line);
