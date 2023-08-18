@@ -26,6 +26,8 @@ hooks/
 
 # Log files
 **.log
+**.tlog
+*.tlog
 
 # Auto saves
 *.auto
