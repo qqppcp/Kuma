@@ -13,7 +13,7 @@ extern b8 create_game(game* out_game);
  */
 int main(void) {
 
-    initialize_memory();
+    KMemory::initialize_memory();
 
     // Request the game instance from the application.
     game game_inst;
@@ -40,6 +40,6 @@ int main(void) {
         return 2;
     }
 
-    shutdown_memory();
+    KMemory::shutdown_memory();
     return 0;
 }

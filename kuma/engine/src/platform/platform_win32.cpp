@@ -1,4 +1,10 @@
+#include <vector>
+
+#include "containers/darray.h"
+#include "containers/alloc.h"
+#include "core/event.h"
 #include "platform/platform.h"
+#include "renderer/vulkan/vulkan_platform.h"
 
 // Windows platform layer.
 #if KPLATFORM_WINDOWS
@@ -10,9 +16,16 @@
 #include <windowsx.h>  // param input extraction
 #include <stdlib.h>
 
+
+// For surface creation
+#define VK_USE_PLATFORM_WIN32_KHR
+#include <vulkan/vulkan.h>
+#include "renderer/vulkan/vulkan_types.inl"
+
 typedef struct internal_state {
     HINSTANCE h_instance;
     HWND hwnd;
+    VkSurfaceKHR surface;
 } internal_state;
 
 // Clock
@@ -185,14 +198,42 @@ void platform_sleep(u64 ms) {
     Sleep(ms);
 }
 
+void platform_get_required_extension_names(std::vector<const char*, MyAllc<const char*>>& name_array)
+{
+    name_array.push_back("VK_KHR_win32_surface");
+}
+
+// Surface creation for Vulkan
+b8 platform_create_vulkan_surface(platform_state *plat_state, vulkan_context *context) {
+    // Simply cold-cast to the known type.
+    internal_state *state = (internal_state *)plat_state->internal_state;
+
+    VkWin32SurfaceCreateInfoKHR create_info = {VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR};
+    create_info.hinstance = state->h_instance;
+    create_info.hwnd = state->hwnd;
+
+    VkResult result = vkCreateWin32SurfaceKHR(context->instance, &create_info, context->allocator, &state->surface);
+    if (result != VK_SUCCESS) {
+        KFATAL("Vulkan surface creation failed.");
+        return FALSE;
+    }
+
+    context->surface = state->surface;
+    return TRUE;
+}
+
+
+
 LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARAM l_param) {
+    event_context data = {};
     switch (msg) {
     case WM_ERASEBKGND:
         // Notify the OS that erasing will be handled by the application to prevent flicker.
         return 1;
     case WM_CLOSE:
-        // TODO: Fire an event for the application to quit.
-        return 0;
+        
+        event_fire(EVENT_CODE_APPLICATION_QUIT, nullptr, data);
+        return TRUE;
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;

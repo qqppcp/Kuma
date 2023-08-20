@@ -25,17 +25,19 @@ typedef enum memory_tag {
     MEMORY_TAG_MAX_TAGS
 } memory_tag;
 
-KAPI void initialize_memory();
-KAPI void shutdown_memory();
+class KAPI KMemory
+{
+public:
+    static  void initialize_memory();
+    static  void shutdown_memory();
+    static  void* allocate(u64 size, memory_tag tag);
+    static  void free(void* block, u64 size, memory_tag tag);
+    static  void* zero_memory(void* block, u64 size);
+    static  void* copy_memory(void* dest, const void* source, u64 size);
+    static  void* set_memory(void* dest, i32 value, u64 size);
+    static  char* get_memory_usage_str();
 
-KAPI void* kallocate(u64 size, memory_tag tag);
-
-KAPI void kfree(void* block, u64 size, memory_tag tag);
-
-KAPI void* kzero_memory(void* block, u64 size);
-
-KAPI void* kcopy_memory(void* dest, const void* source, u64 size);
-
-KAPI void* kset_memory(void* dest, i32 value, u64 size);
-
-KAPI char* get_memory_usage_str();
+private:
+    struct memory_stats;
+    //static memory_stats stats;
+};

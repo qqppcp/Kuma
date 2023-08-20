@@ -1,4 +1,6 @@
 #include "application.h"
+
+
 #include "game_types.h"
 
 #include "logger.h"
@@ -40,14 +42,7 @@ b8 application_create(game* game_inst) {
     // Initialize subsystems.
     initialize_logging();
     input_initialize();
-
-    // TODO: Remove this
-    KFATAL("A test message: %f", 3.14f);
-    KERROR("A test message: %f", 3.14f);
-    KWARN("A test message: %f", 3.14f);
-    KINFO("A test message: %f", 3.14f);
-    KDEBUG("A test message: %f", 3.14f);
-    KTRACE("A test message: %f", 3.14f);
+    
 
     app_state.is_running = TRUE;
     app_state.is_suspended = FALSE;
@@ -98,7 +93,7 @@ b8 application_run() {
     u8 frame_count = 0;
     f64 target_frame_seconds = 1.0f / 60;
     
-    KINFO(get_memory_usage_str());
+    KINFO(KMemory::get_memory_usage_str());
 
     while (app_state.is_running) {
         if (!platform_pump_messages(&app_state.platform)) {

@@ -25,7 +25,7 @@ static b8 initialized = FALSE;
 static input_state state = {};
 
 void input_initialize() {
-    kzero_memory(&state, sizeof(input_state));
+    KMemory::zero_memory(&state, sizeof(input_state));
     initialized = TRUE;
     KINFO("Input subsystem initialized.");
 }
@@ -41,8 +41,8 @@ void input_update(f64 delta_time) {
     }
 
     // Copy current states to previous states.
-    kcopy_memory(&state.keyboard_previous, &state.keyboard_current, sizeof(keyboard_state));
-    kcopy_memory(&state.mouse_previous, &state.mouse_current, sizeof(mouse_state));
+    KMemory::copy_memory(&state.keyboard_previous, &state.keyboard_current, sizeof(keyboard_state));
+    KMemory::copy_memory(&state.mouse_previous, &state.mouse_current, sizeof(mouse_state));
 }
 
 void input_process_key(keys key, b8 pressed) {

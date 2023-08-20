@@ -32,7 +32,7 @@ b8 event_initialize() {
         return FALSE;
     }
     is_initialized = FALSE;
-    kzero_memory(&state, sizeof(state));
+    KMemory::zero_memory(&state, sizeof(state));
 
     is_initialized = TRUE;
 
