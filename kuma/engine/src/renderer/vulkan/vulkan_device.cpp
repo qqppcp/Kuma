@@ -39,7 +39,7 @@ b8 physical_device_meets_requirements(
 
 b8 vulkan_device_create(vulkan_context* context) {
     if (!select_physical_device(context)) {
-        return FALSE;
+        return false;
     }
 
     KINFO("Creating logical device...")
@@ -139,7 +139,7 @@ b8 vulkan_device_create(vulkan_context* context) {
         &context->device.graphics_command_pool));
     KINFO("Graphics command pool created.");
 
-    return TRUE;
+    return true;
 }
 
 void vulkan_device_destroy(vulkan_context* context) {
@@ -254,14 +254,14 @@ b8 vulkan_device_detect_depth_format(vulkan_device* device) {
 
         if ((properties.linearTilingFeatures & flags) == flags) {
             device->depth_format = candidates[i];
-            return TRUE;
+            return true;
         } else if ((properties.optimalTilingFeatures & flags) == flags) {
             device->depth_format = candidates[i];
-            return TRUE;
+            return true;
         }
     }
 
-    return FALSE;
+    return false;
 }
 
 b8 select_physical_device(vulkan_context* context) {
@@ -269,7 +269,7 @@ b8 select_physical_device(vulkan_context* context) {
     VK_CHECK(vkEnumeratePhysicalDevices(context->instance, &physical_device_count, 0));
     if (physical_device_count == 0) {
         KFATAL("No devices which support Vulkan were found.");
-        return FALSE;
+        return false;
     }
 
    //VkPhysicalDevice physical_devices[physical_device_count];
@@ -288,13 +288,13 @@ b8 select_physical_device(vulkan_context* context) {
         // TODO: These requirements should probably be driven by engine
         // configuration.
         vulkan_physical_device_requirements requirements = {};
-        requirements.graphics = TRUE;
-        requirements.present = TRUE;
-        requirements.transfer = TRUE;
+        requirements.graphics = true;
+        requirements.present = true;
+        requirements.transfer = true;
         // NOTE: Enable this if compute will be required.
-        // requirements.compute = TRUE;
-        requirements.sampler_anisotropy = TRUE;
-        requirements.discrete_gpu = TRUE;
+        // requirements.compute = true;
+        requirements.sampler_anisotropy = true;
+        requirements.discrete_gpu = true;
         requirements.device_extension_names = static_cast<const char**>(darray_create(const char*));
         darray_push(requirements.device_extension_names, &VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
@@ -370,11 +370,11 @@ b8 select_physical_device(vulkan_context* context) {
     // Ensure a device was selected
     if (!context->device.physical_device) {
         KERROR("No physical devices were found which meet the requirements.");
-        return FALSE;
+        return false;
     }
 
     KINFO("Physical device selected.");
-    return TRUE;
+    return true;
 }
 
 b8 physical_device_meets_requirements(
@@ -395,7 +395,7 @@ b8 physical_device_meets_requirements(
     if (requirements->discrete_gpu) {
         if (properties->deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
             KINFO("Device is not a discrete GPU, and one is required. Skipping.");
-            return FALSE;
+            return false;
         }
     }
 
@@ -474,7 +474,7 @@ b8 physical_device_meets_requirements(
                 KMemory::free(out_swapchain_support->present_modes, sizeof(VkPresentModeKHR) * out_swapchain_support->present_mode_count, MEMORY_TAG_RENDERER);
             }
             KINFO("Required swapchain support not present, skipping device.");
-            return FALSE;
+            return false;
         }
 
         // Device extensions.
@@ -496,10 +496,10 @@ b8 physical_device_meets_requirements(
 
                 u32 required_extension_count = darray_length(requirements->device_extension_names);
                 for (u32 i = 0; i < required_extension_count; ++i) {
-                    b8 found = FALSE;
+                    b8 found = false;
                     for (u32 j = 0; j < available_extension_count; ++j) {
                         if (!strcmp(requirements->device_extension_names[i], available_extensions[j].extensionName)) {
-                            found = TRUE;
+                            found = true;
                             break;
                         }
                     }
@@ -507,7 +507,7 @@ b8 physical_device_meets_requirements(
                     if (!found) {
                         KINFO("Required extension not found: '%s', skipping device.", requirements->device_extension_names[i]);
                         KMemory::free(available_extensions, sizeof(VkExtensionProperties) * available_extension_count, MEMORY_TAG_RENDERER);
-                        return FALSE;
+                        return false;
                     }
                 }
             }
@@ -517,12 +517,12 @@ b8 physical_device_meets_requirements(
         // Sampler anisotropy
         if (requirements->sampler_anisotropy && !features->samplerAnisotropy) {
             KINFO("Device does not support samplerAnisotropy, skipping.");
-            return FALSE;
+            return false;
         }
 
         // Device meets all requirements.
-        return TRUE;
+        return true;
     }
 
-    return FALSE;
+    return false;
 }

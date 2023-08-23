@@ -6,6 +6,7 @@ typedef enum memory_tag {
     // For temporary use. Should be assigned one of the below or have a new tag created.
     MEMORY_TAG_UNKNOWN,
     MEMORY_TAG_ARRAY,
+    MEMORY_TAG_LINEAR_ALLOCATOR,
     MEMORY_TAG_DARRAY,
     MEMORY_TAG_DICT,
     MEMORY_TAG_RING_QUEUE,
@@ -28,14 +29,15 @@ typedef enum memory_tag {
 class KAPI KMemory
 {
 public:
-    static  void initialize_memory();
-    static  void shutdown_memory();
+    static  void memory_system_initialize(u64* memory_requirement, void* state);
+    static  void memory_system_shutdown(void* state);
     static  void* allocate(u64 size, memory_tag tag);
     static  void free(void* block, u64 size, memory_tag tag);
     static  void* zero_memory(void* block, u64 size);
     static  void* copy_memory(void* dest, const void* source, u64 size);
     static  void* set_memory(void* dest, i32 value, u64 size);
     static  char* get_memory_usage_str();
+    static  u64 get_memory_alloc_count();
 
 private:
     struct memory_stats;
