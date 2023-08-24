@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\containers\alloc.h" />
+    <ClInclude Include="src\containers\darray.h" />
+    <ClInclude Include="src\core\application.h" />
+    <ClInclude Include="src\core\asserts.h" />
+    <ClInclude Include="src\core\clock.h" />
+    <ClInclude Include="src\core\event.h" />
+    <ClInclude Include="src\core\input.h" />
+    <ClInclude Include="src\core\kmemory.h" />
+    <ClInclude Include="src\core\kstring.h" />
+    <ClInclude Include="src\core\logger.h" />
+    <ClInclude Include="src\defines.h" />
+    <ClInclude Include="src\entry.h" />
+    <ClInclude Include="src\game_types.h" />
+    <ClInclude Include="src\math\kmath.h" />
+    <ClInclude Include="src\math\math_types.h" />
+    <ClInclude Include="src\memory\linear_allocator.h" />
+    <ClInclude Include="src\platform\filesystem.h" />
+    <ClInclude Include="src\platform\platform.h" />
+    <ClInclude Include="src\renderer\renderer_backend.h" />
+    <ClInclude Include="src\renderer\renderer_frontend.h" />
+    <ClInclude Include="src\renderer\renderer_types.inl" />
+    <ClInclude Include="src\renderer\vulkan\shaders\vulkan_object_shader.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_backend.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_buffer.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_command_buffer.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_device.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_fence.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_framebuffer.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_image.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_pipeline.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_platform.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_renderpass.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_shader_utils.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_swapchain.h" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_types.inl" />
+    <ClInclude Include="src\renderer\vulkan\vulkan_utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\containers\darray.cpp" />
+    <ClCompile Include="src\core\application.cpp" />
+    <ClCompile Include="src\core\clock.cpp" />
+    <ClCompile Include="src\core\event.cpp" />
+    <ClCompile Include="src\core\input.cpp" />
+    <ClCompile Include="src\core\kmemory.cpp" />
+    <ClCompile Include="src\core\kstring.cpp" />
+    <ClCompile Include="src\core\logger.cpp" />
+    <ClCompile Include="src\math\kmath.cpp" />
+    <ClCompile Include="src\memory\linear_allocator.cpp" />
+    <ClCompile Include="src\platform\filesystem.cpp" />
+    <ClCompile Include="src\platform\platform_win32.cpp" />
+    <ClCompile Include="src\renderer\renderer_backend.cpp" />
+    <ClCompile Include="src\renderer\renderer_frontend.cpp" />
+    <ClCompile Include="src\renderer\vulkan\shaders\vulkan_object_shader.cpp" />
+    <ClCompile Include="src\renderer\vulkan\vulkan_backend.cpp" />
+    <ClCompile Include="src\renderer\vulkan\vulkan_buffer.cpp" />
+    <ClCompile Include="src\renderer\vulkan\vulkan_command_buffer.cpp" />
+    <ClCompile Include="src\renderer\vulkan\vulkan_device.cpp" />
+    <ClCompile Include="src\renderer\vulkan\vulkan_fence.cpp" />
+    <ClCompile Include="src\renderer\vulkan\vulkan_framebuffer.cpp" />
+    <ClCompile Include="src\renderer\vulkan\vulkan_image.cpp" />
+    <ClCompile Include="src\renderer\vulkan\vulkan_pipeline.cpp" />
+    <ClCompile Include="src\renderer\vulkan\vulkan_renderpass.cpp" />
+    <ClCompile Include="src\renderer\vulkan\vulkan_shader_utils.cpp" />
+    <ClCompile Include="src\renderer\vulkan\vulkan_swapchain.cpp" />
+    <ClCompile Include="src\renderer\vulkan\vulkan_utils.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{2d9941fa-37af-4fd9-85a5-f0dbc3b04de2}</ProjectGuid>
+    <RootNamespace>engine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)bin-int\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+    <IncludePath>D:\Dev\Kuma++\code\kuma\engine\src;D:\VulkanSDK\1.3.243.0\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\VulkanSDK\1.3.243.0\Lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;KEXPORT;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies);$(_ZVcpkgCurrentInstalledDir)$(_ZVcpkgConfigSubdir)lib\*.lib</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>Copy "$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\$(ProjectName).dll" "$(SolutionDir)bin\$(Configuration)-$(Platform)\testbed\"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
