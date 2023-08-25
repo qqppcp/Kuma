@@ -55,6 +55,8 @@
     <ClInclude Include="src\renderer\vulkan\vulkan_swapchain.h" />
     <ClInclude Include="src\renderer\vulkan\vulkan_types.inl" />
     <ClInclude Include="src\renderer\vulkan\vulkan_utils.h" />
+    <ClInclude Include="src\resources\resource_types.h" />
+    <ClInclude Include="src\vendor\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\containers\darray.cpp" />
