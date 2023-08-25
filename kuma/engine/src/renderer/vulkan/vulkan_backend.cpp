@@ -40,6 +40,9 @@ void create_command_buffers(renderer_backend* backend);
 void regenerate_framebuffers(renderer_backend* backend, vulkan_swapchain* swapchain, vulkan_renderpass* renderpass);
 b8 recreate_swapchain(renderer_backend* backend);
 
+/**
+ * \brief private, use stagebuffer upload data to Host Local buffer
+ */
 void upload_data_range(vulkan_context* context, VkCommandPool pool, VkFence fence, VkQueue queue, vulkan_buffer* buffer, u64 offset, u64 size, void* data) {
     // Create a host-visible staging buffer to upload to. Mark it as the source of the transfer.
     VkBufferUsageFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -75,7 +78,7 @@ b8 vulkan_renderer_backend_initialize(renderer_backend* backend, const char* app
     app_info.apiVersion = VK_API_VERSION_1_2;
     app_info.pApplicationName = application_name;
     app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    app_info.pEngineName = "Kohi Engine";
+    app_info.pEngineName = "Kuma Engine";
     app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     
     VkInstanceCreateInfo create_info = {VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
@@ -724,7 +727,7 @@ b8 create_buffers(vulkan_context* context) {
     if (!vulkan_buffer_create(
             context,
             vertex_buffer_size,
-            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            static_cast<VkBufferUsageFlagBits>(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT),
             memory_property_flags,
             true,
             &context->object_vertex_buffer)) {
@@ -737,7 +740,7 @@ b8 create_buffers(vulkan_context* context) {
     if (!vulkan_buffer_create(
             context,
             index_buffer_size,
-            VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            static_cast<VkBufferUsageFlagBits>(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT),
             memory_property_flags,
             true,
             &context->object_index_buffer)) {
@@ -765,7 +768,7 @@ void vulkan_renderer_create_texture(const char* name, b8 auto_release, i32 width
     VkFormat image_format = VK_FORMAT_R8G8B8A8_UNORM;
 
     // Create a staging buffer and load data into it.
-    VkBufferUsageFlags usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    auto usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     VkMemoryPropertyFlags memory_prop_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
     vulkan_buffer staging;
     vulkan_buffer_create(&context, image_size, usage, memory_prop_flags, true, &staging);

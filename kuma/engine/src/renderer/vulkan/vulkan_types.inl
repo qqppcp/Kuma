@@ -7,8 +7,8 @@
 #include <vulkan/vulkan.h>
 
 // Checks the given expression's return value against VK_SUCCESS.
-#define VK_CHECK(expr)               \
-{                                \
+#define VK_CHECK(expr)       \
+{                            \
 KASSERT(expr == VK_SUCCESS); \
 }
 

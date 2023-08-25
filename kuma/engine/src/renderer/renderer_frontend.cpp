@@ -39,7 +39,7 @@ void create_texture(texture* t) {
 
 b8 load_texture(const char* texture_name, texture* t) {
     // TODO: Should be able to be located anywhere.
-    char* format_str = "assets/textures/%s.%s";
+    const char* format_str = "D:/Dev/Kuma++/code/kuma/assets/textures/%s.%s";
     const i32 required_channel_count = 4;
     stbi_set_flip_vertically_on_load(true);
     char full_file_path[512];
@@ -158,7 +158,7 @@ b8 renderer_system_initialize(u64* memory_requirement, void* state, const char* 
     state_ptr->far_clip = 1000.0f;
     state_ptr->projection = mat4_perspective(deg_to_rad(45.0f), 1280 / 720.0f, state_ptr->near_clip, state_ptr->far_clip);
 
-    state_ptr->view = mat4_translation((vec3){0, 0, -30.0f});
+    state_ptr->view = mat4_translation({0, 0, -30.0f});
     state_ptr->view = mat4_inverse(state_ptr->view);
 
     // NOTE: Create default texture, a 256x256 blue/white checkerboard pattern.
@@ -254,7 +254,7 @@ b8 renderer_draw_frame(render_packet* packet) {
         state_ptr->backend.update_global_state(state_ptr->projection, state_ptr->view, vec3_zero(), vec4_one(), 0);
 
         
-        mat4 model = mat4_translation((vec3){0, 0, 0});
+        mat4 model = mat4_translation({0, 0, 0});
         // static f32 angle = 0.01f;
         // angle += 0.001f;
         // quat rotation = quat_from_axis_angle(vec3_forward(), angle, false);

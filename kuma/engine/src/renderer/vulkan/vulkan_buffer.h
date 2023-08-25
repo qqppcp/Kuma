@@ -24,8 +24,14 @@ void vulkan_buffer_bind(vulkan_context* context, vulkan_buffer* buffer, u64 offs
 void* vulkan_buffer_lock_memory(vulkan_context* context, vulkan_buffer* buffer, u64 offset, u64 size, u32 flags);
 void vulkan_buffer_unlock_memory(vulkan_context* context, vulkan_buffer* buffer);
 
+/**
+ * \brief from void* data to Vkbuffer
+ */
 void vulkan_buffer_load_data(vulkan_context* context, vulkan_buffer* buffer, u64 offset, u64 size, u32 flags, const void* data);
 
+/**
+ * \brief From Vkbuffer to another Vkbuffer
+ */
 void vulkan_buffer_copy_to(
     vulkan_context* context,
     VkCommandPool pool,

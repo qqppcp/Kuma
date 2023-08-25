@@ -32,7 +32,7 @@ b8 vulkan_object_shader_create(vulkan_context* context, texture* default_diffuse
     global_ubo_layout_binding.binding = 0;
     global_ubo_layout_binding.descriptorCount = 1;
     global_ubo_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    global_ubo_layout_binding.pImmutableSamplers = 0;
+    global_ubo_layout_binding.pImmutableSamplers = VK_NULL_HANDLE;
     global_ubo_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
     VkDescriptorSetLayoutCreateInfo global_layout_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
@@ -51,7 +51,7 @@ b8 vulkan_object_shader_create(vulkan_context* context, texture* default_diffuse
     global_pool_info.maxSets = context->swapchain.image_count;
     VK_CHECK(vkCreateDescriptorPool(context->device.logical_device, &global_pool_info, context->allocator, &out_shader->global_descriptor_pool));
 
-        // Local/Object Descriptors
+    // Local/Object Descriptors
     const u32 local_sampler_count = 1;
     VkDescriptorType descriptor_types[VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT] = {
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,          // Binding 0 - uniform buffer
@@ -159,7 +159,7 @@ b8 vulkan_object_shader_create(vulkan_context* context, texture* default_diffuse
     if (!vulkan_buffer_create(
             context,
             sizeof(global_uniform_object),
-            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            static_cast<VkBufferUsageFlagBits>(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT),
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
             true,
             &out_shader->global_uniform_buffer)) {
@@ -183,7 +183,7 @@ b8 vulkan_object_shader_create(vulkan_context* context, texture* default_diffuse
     if (!vulkan_buffer_create(
             context,
             sizeof(object_uniform_object),  //* MAX_MATERIAL_INSTANCE_COUNT,
-            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            static_cast<VkBufferUsageFlagBits>(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT),
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
             true,
             &out_shader->object_uniform_buffer)) {
@@ -263,7 +263,7 @@ void vulkan_object_shader_update_object(vulkan_context* context, struct vulkan_o
 
     vkCmdPushConstants(command_buffer, shader->pipeline.pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(mat4), &data.model);
 
-        // Obtain material data.
+    // Obtain material data.
     vulkan_object_shader_object_state* object_state = &shader->object_states[data.object_id];
     VkDescriptorSet object_descriptor_set = object_state->descriptor_sets[image_index];
 

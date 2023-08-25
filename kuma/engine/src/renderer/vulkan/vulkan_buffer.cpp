@@ -69,7 +69,7 @@ void vulkan_buffer_destroy(vulkan_context* context, vulkan_buffer* buffer) {
         buffer->handle = 0;
     }
     buffer->total_size = 0;
-    buffer->usage = 0;
+    buffer->usage = (VkBufferUsageFlagBits)0;
     buffer->is_locked = false;
 }
 

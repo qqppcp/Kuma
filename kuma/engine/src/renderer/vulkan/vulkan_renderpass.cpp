@@ -80,14 +80,14 @@ void vulkan_renderpass_create(
 
     // Input from a shader
     subpass.inputAttachmentCount = 0;
-    subpass.pInputAttachments = 0;
+    subpass.pInputAttachments = VK_NULL_HANDLE;
 
     // Attachments used for multisampling colour attachments
-    subpass.pResolveAttachments = 0;
+    subpass.pResolveAttachments = VK_NULL_HANDLE;
 
     // Attachments not used in this subpass, but must be preserved for the next.
     subpass.preserveAttachmentCount = 0;
-    subpass.pPreserveAttachments = 0;
+    subpass.pPreserveAttachments = VK_NULL_HANDLE;
 
     // Render pass dependencies. TODO: make this configurable.
     VkSubpassDependency dependency;
@@ -107,7 +107,7 @@ void vulkan_renderpass_create(
     render_pass_create_info.pSubpasses = &subpass;
     render_pass_create_info.dependencyCount = 1;
     render_pass_create_info.pDependencies = &dependency;
-    render_pass_create_info.pNext = 0;
+    render_pass_create_info.pNext = VK_NULL_HANDLE;
     render_pass_create_info.flags = 0;
 
     VK_CHECK(vkCreateRenderPass(

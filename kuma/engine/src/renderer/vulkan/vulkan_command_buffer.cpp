@@ -34,7 +34,7 @@ void vulkan_command_buffer_free(
         1,
         &command_buffer->handle);
 
-    command_buffer->handle = 0;
+    command_buffer->handle = VK_NULL_HANDLE;
     command_buffer->state = COMMAND_BUFFER_STATE_NOT_ALLOCATED;
 }
 
