@@ -139,10 +139,14 @@ void vulkan_renderpass_begin(
 
     VkClearValue clear_values[2];
     KMemory::zero_memory(clear_values, sizeof(VkClearValue) * 2);
-    clear_values[0].color.float32[0] = renderpass->r;
-    clear_values[0].color.float32[1] = renderpass->g;
-    clear_values[0].color.float32[2] = renderpass->b;
-    clear_values[0].color.float32[3] = renderpass->a;
+    //clear_values[0].color.float32[0] = renderpass->r;
+    //clear_values[0].color.float32[1] = renderpass->g;
+    //clear_values[0].color.float32[2] = renderpass->b;
+    //clear_values[0].color.float32[3] = renderpass->a;
+    clear_values[0].color.float32[0] = 38.0f / 255.0f;
+    clear_values[0].color.float32[1] = 38.0f / 255.0f;
+    clear_values[0].color.float32[2] = 38.0f / 255.0f;
+    clear_values[0].color.float32[3] = 1.0f;
     clear_values[1].depthStencil.depth = renderpass->depth;
     clear_values[1].depthStencil.stencil = renderpass->stencil;
 
