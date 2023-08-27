@@ -19,3 +19,5 @@ void vulkan_renderer_destroy_texture(texture* texture);
 
 b8 vulkan_renderer_create_material(struct material* material);
 void vulkan_renderer_destroy_material(struct material* material);
+
+

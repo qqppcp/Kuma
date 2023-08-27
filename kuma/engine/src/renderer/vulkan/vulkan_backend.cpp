@@ -40,6 +40,8 @@ void create_command_buffers(renderer_backend* backend);
 void regenerate_framebuffers(renderer_backend* backend, vulkan_swapchain* swapchain, vulkan_renderpass* renderpass);
 b8 recreate_swapchain(renderer_backend* backend);
 
+vulkan_material_shader_object builtin_shader_object;
+
 /**
  * \brief private, use stagebuffer upload data to Host Local buffer
  */
@@ -222,7 +224,7 @@ b8 vulkan_renderer_backend_initialize(renderer_backend* backend, const char* app
     }
     
     // Create builtin shaders
-    if (!vulkan_material_shader_create(&context, &context.material_shader)) {
+    if (!builtin_shader_object.create(&context)) {
         KERROR("Error loading built-in basic_lighting shader.");
         return false;
     }
@@ -277,7 +279,7 @@ void vulkan_renderer_backend_shutdown(renderer_backend* backend) {
     vulkan_buffer_destroy(&context, &context.object_vertex_buffer);
     vulkan_buffer_destroy(&context, &context.object_index_buffer);
     
-    vulkan_material_shader_destroy(&context, &context.material_shader);
+    builtin_shader_object.destroy(&context);
     
     // Sync objects
     for (u8 i = 0; i < context.swapchain.max_frames_in_flight; ++i) {
@@ -457,14 +459,15 @@ b8 vulkan_renderer_backend_begin_frame(renderer_backend* backend, f32 delta_time
 void vulkan_renderer_update_global_state(mat4 projection, mat4 view, vec3 view_position, vec4 ambient_colour, i32 mode) {
     vulkan_command_buffer* command_buffer = &context.graphics_command_buffers[context.image_index];
 
-    vulkan_material_shader_use(&context, &context.material_shader);
+    builtin_shader_object.use(&context);
 
-    context.material_shader.global_ubo.projection = projection;
-    context.material_shader.global_ubo.view = view;
+    //context.material_shader.global_ubo.projection = projection;
+    //context.material_shader.global_ubo.view = view;
+    global_uniform_object update_data = {projection, view};
 
     // TODO: other ubo properties
 
-    vulkan_material_shader_update_global_state(&context, &context.material_shader, context.frame_delta_time);
+    builtin_shader_object.update_global_state(&context, update_data, context.frame_delta_time);
     
 }
 
@@ -541,10 +544,10 @@ b8 vulkan_renderer_backend_end_frame(renderer_backend* backend, f32 delta_time) 
 void vulkan_backend_update_object(geometry_render_data data) {
     vulkan_command_buffer* command_buffer = &context.graphics_command_buffers[context.image_index];
 
-    vulkan_material_shader_update_object(&context, &context.material_shader, data);
+    builtin_shader_object.update_object(&context, data);
 
     // TODO: temporary test code
-    vulkan_material_shader_use(&context, &context.material_shader);
+    builtin_shader_object.use(&context);
 
     // Bind vertex buffer at offset.
     VkDeviceSize offsets[1] = {0};
@@ -854,7 +857,7 @@ void vulkan_renderer_destroy_texture(struct texture* texture) {
 
 b8 vulkan_renderer_create_material(struct material* material) {
     if (material) {
-        if (!vulkan_material_shader_acquire_resources(&context, &context.material_shader, material)) {
+        if (!builtin_shader_object.acquire_resources(&context, material)) {
             KERROR("vulkan_renderer_create_material - Failed to acquire shader resources.");
             return false;
         }
@@ -870,7 +873,7 @@ b8 vulkan_renderer_create_material(struct material* material) {
 void vulkan_renderer_destroy_material(struct material* material) {
     if (material) {
         if (material->internal_id != INVALID_ID) {
-            vulkan_material_shader_release_resources(&context, &context.material_shader, material);
+            builtin_shader_object.release_resources(&context, material);
         } else {
             KWARN("vulkan_renderer_destroy_material called with internal_id=INVALID_ID. Nothing was done.");
         }

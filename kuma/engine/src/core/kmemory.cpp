@@ -7,15 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 
-struct memory_stats {
-    u64 total_allocated;
-    u64 tagged_allocations[MEMORY_TAG_MAX_TAGS];
-};
 
-typedef struct memory_system_state {
-    struct memory_stats stats;
-    u64 alloc_count;
-} memory_system_state;
 
 static const char* memory_tag_strings[MEMORY_TAG_MAX_TAGS] = {
     "UNKNOWN    ",
@@ -37,7 +29,7 @@ static const char* memory_tag_strings[MEMORY_TAG_MAX_TAGS] = {
     "ENTITY_NODE",
     "SCENE      " };
 
-static memory_system_state* state_ptr;
+KMemory::memory_system_state* KMemory::state_ptr = 0;
 
 void KMemory::memory_system_initialize(u64* memory_requirement, void* state)
 {

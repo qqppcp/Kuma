@@ -39,7 +39,16 @@ public:
     static  char* get_memory_usage_str();
     static  u64 get_memory_alloc_count();
 
+    struct memory_stats {
+        u64 total_allocated;
+        u64 tagged_allocations[MEMORY_TAG_MAX_TAGS];
+    };
+
+    struct memory_system_state {
+        struct memory_stats stats;
+        u64 alloc_count;
+    } ;
+    
+    static memory_system_state* state_ptr;
 private:
-    struct memory_stats;
-    //static memory_stats stats;
 };
