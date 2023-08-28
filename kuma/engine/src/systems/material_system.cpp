@@ -203,6 +203,16 @@ void material_system::release_by_name(const char* name)
     }
 }
 
+material* material_system::get_default_material()
+{
+    if (state_ptr) {
+        return &state_ptr->default_material;
+    }
+
+    KFATAL("material_system_get_default called before system is initialized.");
+    return 0;
+}
+
 b8 material_system::create_default_material(material_system_state* state)
 {
     KMemory::zero_memory(&state->default_material, sizeof(material));

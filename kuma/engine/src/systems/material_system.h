@@ -52,6 +52,7 @@ public:
     static material* acquire_by_name(const char* name);
     static material* acquire_from_config(material_config config);
     static void release_by_name(const char* name);
+    static material* get_default_material();
 
     struct material_system_state {
         material_system_config config;

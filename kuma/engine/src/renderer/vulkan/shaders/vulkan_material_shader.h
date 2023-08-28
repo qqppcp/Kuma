@@ -42,10 +42,12 @@ public:
     void destroy(vulkan_context* context);
     void use(vulkan_context* context);
     void update_global_state(vulkan_context* context, const global_uniform_object& update_data, f32 delta_time);
-    void update_object(vulkan_context* context, geometry_render_data data);
     b8 acquire_resources(vulkan_context* context, material* material);
     void release_resources(vulkan_context* context, material* material);
 
+    void set_model(vulkan_context* context, struct vulkan_material_shader* shader, mat4 model);
+    void apply_material(vulkan_context* context, struct vulkan_material_shader* shader, material* material);
+    
     vulkan_material_shader_object() = default;
     ~vulkan_material_shader_object() = default;
 private:
