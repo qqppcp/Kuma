@@ -42,12 +42,12 @@ b8 geometry_system_initialize(u64* memory_requirement, void* state, geometry_sys
         return true;
     }
 
-    state_ptr = state;
+    state_ptr = static_cast<geometry_system_state*>(state);
     state_ptr->config = config;
 
     // The array block is after the state. Already allocated, so just set the pointer.
-    void* array_block = state + struct_requirement;
-    state_ptr->registered_geometries = array_block;
+    void* array_block = (char*)state + struct_requirement;
+    state_ptr->registered_geometries = static_cast<geometry_reference*>(array_block);
 
     // Invalidate all geometries in the array.
     u32 count = state_ptr->config.max_geometry_count;
@@ -156,9 +156,9 @@ b8 create_geometry(geometry_system_state* state, geometry_config config, geometr
 
     // Acquire the material
     if (string_length(config.material_name) > 0) {
-        g->material = material_system_acquire(config.material_name);
+        g->material = material_system::acquire_by_name(config.material_name);
         if (!g->material) {
-            g->material = material_system_get_default();
+            g->material = material_system::get_default_material();
         }
     }
 
@@ -175,14 +175,14 @@ void destroy_geometry(geometry_system_state* state, geometry* g) {
 
     // Release the material.
     if (g->material && string_length(g->material->name) > 0) {
-        material_system_release(g->material->name);
+        material_system::release_by_name(g->material->name);
         g->material = 0;
     }
 }
 
 b8 create_default_geometry(geometry_system_state* state) {
     vertex_3d verts[4];
-    kzero_memory(verts, sizeof(vertex_3d) * 4);
+    KMemory::zero_memory(verts, sizeof(vertex_3d) * 4);
 
     const f32 f = 10.0f;
 
@@ -215,7 +215,7 @@ b8 create_default_geometry(geometry_system_state* state) {
     }
 
     // Acquire the default material.
-    state->default_geometry.material = material_system_get_default();
+    state->default_geometry.material = material_system::get_default_material();
 
     return true;
 }
@@ -249,9 +249,9 @@ geometry_config geometry_system_generate_plane_config(f32 width, f32 height, u32
 
     geometry_config config;
     config.vertex_count = x_segment_count * y_segment_count * 4;  // 4 verts per segment
-    config.vertices = kallocate(sizeof(vertex_3d) * config.vertex_count, MEMORY_TAG_ARRAY);
+    config.vertices = static_cast<vertex_3d*>(KMemory::allocate(sizeof(vertex_3d) * config.vertex_count, MEMORY_TAG_ARRAY));
     config.index_count = x_segment_count * y_segment_count * 6;  // 6 indices per segment
-    config.indices = kallocate(sizeof(u32) * config.index_count, MEMORY_TAG_ARRAY);
+    config.indices = static_cast<u32*>(KMemory::allocate(sizeof(u32) * config.index_count, MEMORY_TAG_ARRAY));
 
     // TODO: This generates extra vertices, but we can always deduplicate them later.
     f32 seg_width = width / x_segment_count;

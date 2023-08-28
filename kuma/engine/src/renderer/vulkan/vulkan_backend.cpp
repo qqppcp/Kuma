@@ -947,7 +947,7 @@ void vulkan_renderer_draw_geometry(geometry_render_data data) {
     // TODO: check if this is actually needed.
     builtin_shader_object.use(&context);
 
-    builtin_shader_object.set_model(&context, &context.material_shader, data.model);
+    builtin_shader_object.set_model(&context, data.model);
 
     material* m = 0;
     if (data.geometry->material) {
@@ -955,7 +955,7 @@ void vulkan_renderer_draw_geometry(geometry_render_data data) {
     } else {
         m = material_system::get_default_material();
     }
-    builtin_shader_object.apply_material(&context, &context.material_shader, m);
+    builtin_shader_object.apply_material(&context, m);
 
     // Bind vertex buffer at offset.
     VkDeviceSize offsets[1] = {buffer_data->vertex_buffer_offset};

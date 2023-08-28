@@ -31,13 +31,6 @@ struct material_system_config {
     u32 max_material_count;
 };
 
-struct material_config {
-    char name[MATERIAL_NAME_MAX_LENGTH];
-    b8 auto_release;
-    vec4 diffuse_colour;
-    char diffuse_map_name[TEXTURE_NAME_MAX_LENGTH];
-};
-
 class material_system
 {
 public:
@@ -78,5 +71,5 @@ private:
     static b8 create_default_material(material_system_state* state);
     static b8 load_material(material_config config, material* m);
     static void destroy_material(material* m);
-    static b8 load_configuration_file(const char* path, material_config* out_config);
+
 };

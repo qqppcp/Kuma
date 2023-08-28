@@ -45,8 +45,8 @@ public:
     b8 acquire_resources(vulkan_context* context, material* material);
     void release_resources(vulkan_context* context, material* material);
 
-    void set_model(vulkan_context* context, struct vulkan_material_shader* shader, mat4 model);
-    void apply_material(vulkan_context* context, struct vulkan_material_shader* shader, material* material);
+    void set_model(vulkan_context* context, mat4 model);
+    void apply_material(vulkan_context* context, material* material);
     
     vulkan_material_shader_object() = default;
     ~vulkan_material_shader_object() = default;
