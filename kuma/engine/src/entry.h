@@ -13,9 +13,6 @@ extern b8 create_game(game* out_game);
  * The main entry point of the application.
  */
 int main(void) {
-    
-    create_game(nullptr);
-    
     // Request the game instance from the application.
     game game_inst;
     if (!create_game(&game_inst)) {

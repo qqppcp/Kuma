@@ -3,6 +3,7 @@
 #include "defines.h"
 #include "core/asserts.h"
 #include "renderer/renderer_types.inl"
+#include "containers/freelist.h"
 
 #include <vulkan/vulkan.h>
 
@@ -20,6 +21,12 @@ typedef struct vulkan_buffer {
     VkDeviceMemory memory;
     i32 memory_index;
     u32 memory_property_flags;
+    /** @brief The amount of memory required for the freelist. */
+    u64 freelist_memory_requirement;
+    /** @brief The memory block used by the internal freelist. */
+    void* freelist_block;
+    /** @brief A freelist to track allocations. */
+    freelist buffer_freelist;
 } vulkan_buffer;
 
 typedef struct vulkan_swapchain_support_info {
@@ -37,6 +44,7 @@ typedef struct vulkan_device {
     i32 graphics_queue_index;
     i32 present_queue_index;
     i32 transfer_queue_index;
+    b8 supports_device_local_host_visible;
 
     VkQueue graphics_queue;
     VkQueue present_queue;
@@ -158,10 +166,10 @@ typedef struct vulkan_geometry_data {
     u32 generation;
     u32 vertex_count;
     u32 vertex_element_size;
-    u32 vertex_buffer_offset;
+    u64 vertex_buffer_offset;
     u32 index_count;
     u32 index_element_size;
-    u32 index_buffer_offset;
+    u64 index_buffer_offset;
 } vulkan_geometry_data;
 
 typedef struct vulkan_material_shader_global_ubo {
@@ -176,6 +184,9 @@ typedef struct vulkan_material_shader_instance_ubo {
     vec4 v_reserved0;    // 16 bytes, reserved for future use
     vec4 v_reserved1;    // 16 bytes, reserved for future use
     vec4 v_reserved2;    // 16 bytes, reserved for future use
+    mat4 m_reserved0;    // 64 bytes, reserved for future use
+    mat4 m_reserved1;    // 64 bytes, reserved for future use
+    mat4 m_reserved2;    // 64 bytes, reserved for future use
 } vulkan_material_shader_instance_ubo;
 
 typedef struct vulkan_material_shader {
@@ -244,6 +255,9 @@ typedef struct vulkan_ui_shader_instance_ubo {
     vec4 v_reserved0;    // 16 bytes, reserved for future use
     vec4 v_reserved1;    // 16 bytes, reserved for future use
     vec4 v_reserved2;    // 16 bytes, reserved for future use
+    mat4 m_reserved0;    // 64 bytes, reserved for future use
+    mat4 m_reserved1;    // 64 bytes, reserved for future use
+    mat4 m_reserved2;    // 64 bytes, reserved for future use
 } vulkan_ui_shader_instance_ubo;
 
 typedef struct vulkan_ui_shader {
@@ -257,7 +271,7 @@ typedef struct vulkan_ui_shader {
     VkDescriptorSet global_descriptor_sets[3];
 
     // Global uniform object.
-    vulkan_material_shader_global_ubo global_ubo;
+    vulkan_ui_shader_global_ubo  global_ubo;
 
     // Global uniform buffer.
     vulkan_buffer global_uniform_buffer;
@@ -324,7 +338,7 @@ typedef struct vulkan_context {
     VkFence in_flight_fences[2];
 
     // Holds pointers to fences which exist and are owned elsewhere, one per frame.
-    VkFence* images_in_flight[3];
+    VkFence images_in_flight[3];
     
     u32 image_index;
     u32 current_frame;
@@ -333,9 +347,6 @@ typedef struct vulkan_context {
 
     vulkan_material_shader material_shader;
     vulkan_ui_shader ui_shader;
-    
-    u64 geometry_vertex_offset;
-    u64 geometry_index_offset;
     
     // TODO: make dynamic
     vulkan_geometry_data geometries[VULKAN_MAX_GEOMETRY_COUNT];

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "defines.h"
+#include "memory/dynamic_allocator.h"
 
 typedef enum memory_tag {
     // For temporary use. Should be assigned one of the below or have a new tag created.
@@ -26,11 +27,17 @@ typedef enum memory_tag {
     MEMORY_TAG_MAX_TAGS
 } memory_tag;
 
+/** @brief The configuration for the memory system. */
+typedef struct memory_system_configuration {
+    /** @brief The total memory size in byes used by the internal allocator for this system. */
+    u64 total_alloc_size;
+} memory_system_configuration;
+
 class KAPI KMemory
 {
 public:
-    static  void memory_system_initialize(u64* memory_requirement, void* state);
-    static  void memory_system_shutdown(void* state);
+    static  b8 memory_system_initialize(memory_system_configuration config);
+    static  void memory_system_shutdown();
     static  void* allocate(u64 size, memory_tag tag);
     static  void free(void* block, u64 size, memory_tag tag);
     static  void* zero_memory(void* block, u64 size);
@@ -45,8 +52,12 @@ public:
     };
 
     struct memory_system_state {
+        memory_system_configuration config;
         struct memory_stats stats;
         u64 alloc_count;
+        u64 allocator_memory_requirement;
+        dynamic_allocator allocator;
+        void* allocator_block;
     } ;
     
     static memory_system_state* state_ptr;

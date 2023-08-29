@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="src\containers\alloc.h" />
     <ClInclude Include="src\containers\darray.h" />
+    <ClInclude Include="src\containers\freelist.h" />
     <ClInclude Include="src\containers\hashtable.h" />
     <ClInclude Include="src\core\application.h" />
     <ClInclude Include="src\core\asserts.h" />
@@ -35,6 +36,7 @@
     <ClInclude Include="src\game_types.h" />
     <ClInclude Include="src\math\kmath.h" />
     <ClInclude Include="src\math\math_types.h" />
+    <ClInclude Include="src\memory\dynamic_allocator.h" />
     <ClInclude Include="src\memory\linear_allocator.h" />
     <ClInclude Include="src\platform\filesystem.h" />
     <ClInclude Include="src\platform\platform.h" />
@@ -69,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\containers\darray.cpp" />
+    <ClCompile Include="src\containers\freelist.cpp" />
     <ClCompile Include="src\containers\hashtable.cpp" />
     <ClCompile Include="src\core\application.cpp" />
     <ClCompile Include="src\core\clock.cpp" />
@@ -78,6 +81,7 @@
     <ClCompile Include="src\core\kstring.cpp" />
     <ClCompile Include="src\core\logger.cpp" />
     <ClCompile Include="src\math\kmath.cpp" />
+    <ClCompile Include="src\memory\dynamic_allocator.cpp" />
     <ClCompile Include="src\memory\linear_allocator.cpp" />
     <ClCompile Include="src\platform\filesystem.cpp" />
     <ClCompile Include="src\platform\platform_win32.cpp" />

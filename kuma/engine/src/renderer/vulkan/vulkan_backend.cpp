@@ -46,7 +46,13 @@ vulkan_material_shader_object builtin_shader_object;
 /**
  * \brief private, use stagebuffer upload data to Host Local buffer
  */
-void upload_data_range(vulkan_context* context, VkCommandPool pool, VkFence fence, VkQueue queue, vulkan_buffer* buffer, u64 offset, u64 size, const void* data) {
+b8 upload_data_range(vulkan_context* context, VkCommandPool pool, VkFence fence, VkQueue queue, vulkan_buffer* buffer, u64* out_offset, u64 size, const void* data) {
+    // Allocate space in the buffer.
+    if (!vulkan_buffer_allocate(buffer, size, out_offset)) {
+        KERROR("upload_data_range failed to allocate from the given buffer!");
+        return false;
+    }
+
     // Create a host-visible staging buffer to upload to. Mark it as the source of the transfer.
     VkBufferUsageFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
     vulkan_buffer staging;
@@ -56,15 +62,18 @@ void upload_data_range(vulkan_context* context, VkCommandPool pool, VkFence fenc
     vulkan_buffer_load_data(context, &staging, 0, size, 0, data);
 
     // Perform the copy from staging to the device local buffer.
-    vulkan_buffer_copy_to(context, pool, fence, queue, staging.handle, 0, buffer->handle, offset, size);
+    vulkan_buffer_copy_to(context, pool, fence, queue, staging.handle, 0, buffer->handle, *out_offset, size);
 
     // Clean up the staging buffer.
     vulkan_buffer_destroy(context, &staging);
+
+    return true;
 }
 
 void free_data_range(vulkan_buffer* buffer, u64 offset, u64 size) {
-    // TODO: Free this in the buffer.
-    // TODO: update free list with this range being free.
+    if (buffer) {
+        vulkan_buffer_free(buffer, size, offset);
+    }
 }
 
 b8 vulkan_renderer_backend_initialize(renderer_backend* backend, const char* application_name) {
@@ -117,7 +126,10 @@ b8 vulkan_renderer_backend_initialize(renderer_backend* backend, const char* app
 
     // The list of validation layers required.
     required_validation_layer_names.push_back("VK_LAYER_KHRONOS_validation");
-
+    
+    // NOTE: enable this when needed for debugging.
+    //required_validation_layer_names.push_back("VK_LAYER_LUNARG_api_dump");
+    
     // Obtain a list of available validation layers
     uint32_t available_layer_count = 0;
     VK_CHECK(vkEnumerateInstanceLayerProperties(&available_layer_count, 0));
@@ -195,7 +207,7 @@ b8 vulkan_renderer_backend_initialize(renderer_backend* backend, const char* app
     &context,
     &context.main_renderpass,
     {0, 0, (f32)context.framebuffer_width, (f32)context.framebuffer_height},
-    {0.0f, 0.0f, 0.2f, 1.0f},
+    {0.149f, 0.149f, 0.149f, 1.0f},
     1.0f,
     0,
     RENDERPASS_CLEAR_COLOUR_BUFFER_FLAG | RENDERPASS_CLEAR_DEPTH_BUFFER_FLAG | RENDERPASS_CLEAR_STENCIL_BUFFER_FLAG,
@@ -393,7 +405,7 @@ b8 vulkan_renderer_backend_begin_frame(renderer_backend* backend, f32 delta_time
     // Wait for the execution of the current frame to complete. The fence being free will allow this one to move on.
     VkResult result = vkWaitForFences(context.device.logical_device, 1, &context.in_flight_fences[context.current_frame], true, UINT64_MAX);
     if (!vulkan_result_is_success(result)) {
-        KERROR("In-flight fence wait failure! error: %s", vulkan_result_string(result, true));
+        KFATAL("In-flight fence wait failure! error: %s", vulkan_result_string(result, true));
         return false;
     }
 
@@ -406,6 +418,7 @@ b8 vulkan_renderer_backend_begin_frame(renderer_backend* backend, f32 delta_time
             context.image_available_semaphores[context.current_frame],
             0,
             &context.image_index)) {
+        KERROR("Failed to acquire next image index, booting.");
         return false;
     }
 
@@ -432,14 +445,19 @@ b8 vulkan_renderer_backend_begin_frame(renderer_backend* backend, f32 delta_time
     vkCmdSetViewport(command_buffer->handle, 0, 1, &viewport);
     vkCmdSetScissor(command_buffer->handle, 0, 1, &scissor);
 
+    // Update the main/world renderpass dimensions.
     context.main_renderpass.render_area.z = context.framebuffer_width;
     context.main_renderpass.render_area.w = context.framebuffer_height;
+
+    // Also update the UI renderpass dimensions.
+    context.ui_renderpass.render_area.z = context.framebuffer_width;
+    context.ui_renderpass.render_area.w = context.framebuffer_height;
 
     return true;
 }
 
 void vulkan_renderer_update_global_world_state(mat4 projection, mat4 view, vec3 view_position, vec4 ambient_colour, i32 mode) {
-    vulkan_command_buffer* command_buffer = &context.graphics_command_buffers[context.image_index];
+    //vulkan_command_buffer* command_buffer = &context.graphics_command_buffers[context.image_index];
 
     builtin_shader_object.use(&context);
 
@@ -452,7 +470,7 @@ void vulkan_renderer_update_global_world_state(mat4 projection, mat4 view, vec3 
 
 void vulkan_renderer_update_global_ui_state(mat4 projection, mat4 view, i32 mode) {
     
-    vulkan_command_buffer* command_buffer = &context.graphics_command_buffers[context.image_index];
+    //vulkan_command_buffer* command_buffer = &context.graphics_command_buffers[context.image_index];
     vulkan_ui_shader_use(&context, &context.ui_shader);
 
     context.ui_shader.global_ubo.projection = projection;
@@ -470,14 +488,14 @@ b8 vulkan_renderer_backend_end_frame(renderer_backend* backend, f32 delta_time) 
 
     // Make sure the previous frame is not using this image (i.e. its fence is being waited on)
     if (context.images_in_flight[context.image_index] != VK_NULL_HANDLE) {  // was frame
-        VkResult result = vkWaitForFences(context.device.logical_device, 1, context.images_in_flight[context.image_index], true, UINT64_MAX);
+        VkResult result = vkWaitForFences(context.device.logical_device, 1, &context.images_in_flight[context.image_index], true, UINT64_MAX);
         if (!vulkan_result_is_success(result)) {
             KFATAL("vkWaitForFences error: %s", vulkan_result_string(result, true));
         }
     }
 
     // Mark the image fence as in-use by this frame.
-    context.images_in_flight[context.image_index] = &context.in_flight_fences[context.current_frame];
+    context.images_in_flight[context.image_index] = context.in_flight_fences[context.current_frame];
 
     // Reset the fence for use on the next frame
     VK_CHECK(vkResetFences(context.device.logical_device, 1, &context.in_flight_fences[context.current_frame]));
@@ -737,10 +755,17 @@ b8 recreate_swapchain(renderer_backend* backend) {
         vkDestroyFramebuffer(context.device.logical_device, context.swapchain.framebuffers[i], context.allocator);
     }
 
+    // Update the main/world renderpass dimensions.
     context.main_renderpass.render_area.x = 0;
     context.main_renderpass.render_area.y = 0;
     context.main_renderpass.render_area.z = context.framebuffer_width;
     context.main_renderpass.render_area.w = context.framebuffer_height;
+    
+    // Also update the UI renderpass dimensions.
+    context.ui_renderpass.render_area.x = 0;
+    context.ui_renderpass.render_area.y = 0;
+    context.ui_renderpass.render_area.z = context.framebuffer_width;
+    context.ui_renderpass.render_area.w = context.framebuffer_height;
 
     // Regenerate swapchain and world framebuffers
     regenerate_framebuffers();
@@ -768,7 +793,6 @@ b8 create_buffers(vulkan_context* context) {
         KERROR("Error creating vertex buffer.");
         return false;
             }
-    context->geometry_vertex_offset = 0;
 
     // Geometry index buffer
     const u64 index_buffer_size = sizeof(u32) * 1024 * 1024;
@@ -782,7 +806,6 @@ b8 create_buffers(vulkan_context* context) {
         KERROR("Error creating vertex buffer.");
         return false;
             }
-    context->geometry_index_offset = 0;
 
     return true;
 }
@@ -984,40 +1007,39 @@ b8 vulkan_renderer_create_geometry(geometry* geometry, u32 vertex_size, u32 vert
     VkQueue queue = context.device.graphics_queue;
 
     // Vertex data.
-    internal_data->vertex_buffer_offset = context.geometry_vertex_offset;
     internal_data->vertex_count = vertex_count;
     internal_data->vertex_element_size = sizeof(vertex_3d);
     u32 total_size = vertex_count * vertex_size;
-    upload_data_range(
-        &context,
-        pool,
-        0,
-        queue,
-        &context.object_vertex_buffer,
-        internal_data->vertex_buffer_offset,
-        total_size,
-        vertices);
-
-    // TODO: should maintain a free list instead of this.
-    context.geometry_vertex_offset += total_size;
+    if (!upload_data_range(
+            &context,
+            pool,
+            0,
+            queue,
+            &context.object_vertex_buffer,
+            &internal_data->vertex_buffer_offset,
+            total_size,
+            vertices)) {
+        KERROR("vulkan_renderer_create_geometry failed to upload to the vertex buffer!");
+        return false;
+            }
 
     // Index data, if applicable
     if (index_count && indices) {
-        internal_data->index_buffer_offset = context.geometry_index_offset;
         internal_data->index_count = index_count;
         internal_data->index_element_size = sizeof(u32);
         total_size = index_count * index_size;
-        upload_data_range(
-            &context, 
-            pool, 
-            0, 
-            queue, 
-            &context.object_index_buffer, 
-            internal_data->index_buffer_offset, 
-            total_size, 
-            indices);
-        // TODO: should maintain a free list instead of this.
-        context.geometry_index_offset += total_size;
+        if (!upload_data_range(
+                &context,
+                pool,
+                0,
+                queue,
+                &context.object_index_buffer,
+                &internal_data->index_buffer_offset,
+                total_size,
+                indices)) {
+            KERROR("vulkan_renderer_create_geometry failed to upload to the index buffer!");
+            return false;
+        }
     }
 
     if (internal_data->generation == INVALID_ID) {

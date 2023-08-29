@@ -190,7 +190,7 @@ b8 texture_system::create_default_textures(texture_system_state* state)
     const u32 tex_dimension = 256;
     const u32 channels = 4;
     const u32 pixel_count = tex_dimension * tex_dimension;
-    u8 pixels[pixel_count * channels];
+    u8 pixels[262144]; // pixel_count * channels
     KMemory::set_memory(pixels, 0XFF, sizeof(u8) * pixel_count * channels);
 
     // Each pixel.

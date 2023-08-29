@@ -30,7 +30,7 @@ b8 vulkan_ui_shader_create(vulkan_context* context, vulkan_ui_shader* out_shader
     global_ubo_layout_binding.binding = 0;
     global_ubo_layout_binding.descriptorCount = 1;
     global_ubo_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    global_ubo_layout_binding.pImmutableSamplers = 0;
+    global_ubo_layout_binding.pImmutableSamplers = VK_NULL_HANDLE;
     global_ubo_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
     VkDescriptorSetLayoutCreateInfo global_layout_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
@@ -177,7 +177,7 @@ b8 vulkan_ui_shader_create(vulkan_context* context, vulkan_ui_shader* out_shader
 
     VkDescriptorSetAllocateInfo alloc_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
     alloc_info.descriptorPool = out_shader->global_descriptor_pool;
-    alloc_info.descriptorSetCount = 3;
+    alloc_info.descriptorSetCount = context->swapchain.image_count;
     alloc_info.pSetLayouts = global_layouts;
     VK_CHECK(vkAllocateDescriptorSets(context->device.logical_device, &alloc_info, out_shader->global_descriptor_sets));
 
@@ -232,9 +232,6 @@ void vulkan_ui_shader_update_global_state(vulkan_context* context, struct vulkan
     VkCommandBuffer command_buffer = context->graphics_command_buffers[image_index].handle;
     VkDescriptorSet global_descriptor = shader->global_descriptor_sets[image_index];
 
-    // Bind the global descriptor set to be updated.
-    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->pipeline.pipeline_layout, 0, 1, &global_descriptor, 0, 0);
-
     // Configure the descriptors for the given index.
     u32 range = sizeof(vulkan_ui_shader_global_ubo);
     u64 offset = 0;
@@ -257,6 +254,9 @@ void vulkan_ui_shader_update_global_state(vulkan_context* context, struct vulkan
     descriptor_write.pBufferInfo = &bufferInfo;
 
     vkUpdateDescriptorSets(context->device.logical_device, 1, &descriptor_write, 0, 0);
+    
+    // Bind the global descriptor set to be updated.
+    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->pipeline.pipeline_layout, 0, 1, &global_descriptor, 0, 0);
 }
 
 void vulkan_ui_shader_set_model(vulkan_context* context, struct vulkan_ui_shader* shader, mat4 model) {
@@ -401,7 +401,7 @@ b8 vulkan_ui_shader_acquire_resources(vulkan_context* context, struct vulkan_ui_
 
     VkDescriptorSetAllocateInfo alloc_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
     alloc_info.descriptorPool = shader->object_descriptor_pool;
-    alloc_info.descriptorSetCount = 3;  // one per frame
+    alloc_info.descriptorSetCount = context->swapchain.image_count;  // one per frame
     alloc_info.pSetLayouts = layouts;
     VkResult result = vkAllocateDescriptorSets(context->device.logical_device, &alloc_info, object_state->descriptor_sets);
     if (result != VK_SUCCESS) {
@@ -415,7 +415,7 @@ b8 vulkan_ui_shader_acquire_resources(vulkan_context* context, struct vulkan_ui_
 void vulkan_ui_shader_release_resources(vulkan_context* context, struct vulkan_ui_shader* shader, material* material) {
     vulkan_ui_shader_instance_state* instance_state = &shader->instance_states[material->internal_id];
 
-    const u32 descriptor_set_count = 3;
+    const u32 descriptor_set_count = context->swapchain.image_count;
 
     // Wait for any pending operations using the descriptor set to finish.
     vkDeviceWaitIdle(context->device.logical_device);

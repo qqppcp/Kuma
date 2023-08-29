@@ -160,11 +160,12 @@ b8 vulkan_material_shader_object::create(vulkan_context* context)
     }
 
     // Create uniform buffer.
+    u32 device_local_bits = context->device.supports_device_local_host_visible ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : 0;
     if (!vulkan_buffer_create(
             context,
             sizeof(vulkan_material_shader_global_ubo),
             static_cast<VkBufferUsageFlagBits>(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT),
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | device_local_bits,
             true,
             &m_shader.global_uniform_buffer)) {
         KERROR("Vulkan buffer creation failed for object shader.");
@@ -179,7 +180,7 @@ b8 vulkan_material_shader_object::create(vulkan_context* context)
 
     VkDescriptorSetAllocateInfo alloc_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
     alloc_info.descriptorPool = m_shader.global_descriptor_pool;
-    alloc_info.descriptorSetCount = 3;
+    alloc_info.descriptorSetCount = context->swapchain.image_count;
     alloc_info.pSetLayouts = global_layouts;
     VK_CHECK(vkAllocateDescriptorSets(context->device.logical_device, &alloc_info, m_shader.global_descriptor_sets));
 
@@ -188,7 +189,7 @@ b8 vulkan_material_shader_object::create(vulkan_context* context)
             context,
             sizeof(vulkan_material_shader_instance_ubo) * VULKAN_MAX_MATERIAL_COUNT,
             static_cast<VkBufferUsageFlagBits>(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT),
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
             true,
             &m_shader.object_uniform_buffer)) {
         KERROR("Material instance buffer creation failed for shader.");
@@ -236,10 +237,7 @@ void vulkan_material_shader_object::update_global_state(vulkan_context* context,
     u32 image_index = context->image_index;
     VkCommandBuffer command_buffer = context->graphics_command_buffers[image_index].handle;
     VkDescriptorSet global_descriptor = m_shader.global_descriptor_sets[image_index];
-
-    // Bind the global descriptor set to be updated.
-    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_shader.pipeline.pipeline_layout, 0, 1, &global_descriptor, 0, 0);
-
+    
     // Configure the descriptors for the given index.
     u32 range = sizeof(vulkan_material_shader_global_ubo);
     u64 offset = 0;
@@ -263,6 +261,9 @@ void vulkan_material_shader_object::update_global_state(vulkan_context* context,
     descriptor_write.pBufferInfo = &bufferInfo;
 
     vkUpdateDescriptorSets(context->device.logical_device, 1, &descriptor_write, 0, 0);
+    
+    // Bind the global descriptor set to be updated.
+    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_shader.pipeline.pipeline_layout, 0, 1, &global_descriptor, 0, 0);
 }
 
 b8 vulkan_material_shader_object::acquire_resources(vulkan_context* context, material* material)
@@ -287,7 +288,7 @@ b8 vulkan_material_shader_object::acquire_resources(vulkan_context* context, mat
 
     VkDescriptorSetAllocateInfo alloc_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
     alloc_info.descriptorPool = m_shader.object_descriptor_pool;
-    alloc_info.descriptorSetCount = 3;  // one per frame
+    alloc_info.descriptorSetCount = context->swapchain.image_count;  // one per frame
     alloc_info.pSetLayouts = layouts;
     VkResult result = vkAllocateDescriptorSets(context->device.logical_device, &alloc_info, object_state->descriptor_sets);
     if (result != VK_SUCCESS) {
@@ -302,7 +303,7 @@ void vulkan_material_shader_object::release_resources(vulkan_context* context, m
 {
     vulkan_material_shader_instance_state* instance_state = &m_shader.instance_states[material->internal_id];
 
-    const u32 descriptor_set_count = 3;
+    const u32 descriptor_set_count = context->swapchain.image_count;
     
     // Wait for any pending operations using the descriptor set to finish.
     vkDeviceWaitIdle(context->device.logical_device);

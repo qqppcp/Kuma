@@ -113,7 +113,7 @@ void geometry_system_release(geometry* geometry) {
 
         // Take a copy of the id;
         u32 id = geometry->id;
-        if (ref->geometry.id == geometry->id) {
+        if (ref->geometry.id == id) {
             if (ref->reference_count > 0) {
                 ref->reference_count--;
             }
@@ -218,6 +218,7 @@ b8 create_default_geometries(geometry_system_state* state) {
 
     u32 indices[6] = {0, 1, 2, 0, 3, 1};
 
+    state->default_geometry.internal_id = INVALID_ID;
     // Send the geometry off to the renderer to be uploaded to the GPU.
     if (!renderer_create_geometry(&state->default_geometry, sizeof(vertex_3d), 4, verts, sizeof(u32), 6, indices)) {
         KFATAL("Failed to create default geometry. Application cannot continue.");
@@ -253,6 +254,7 @@ b8 create_default_geometries(geometry_system_state* state) {
     // Indices (NOTE: counter-clockwise)
     u32 indices2d[6] = {2, 1, 0, 3, 0, 1};
 
+    state->default_2d_geometry.internal_id = INVALID_ID;
     // Send the geometry off to the renderer to be uploaded to the GPU.
     if (!renderer_create_geometry(&state->default_2d_geometry, sizeof(vertex_2d), 4, verts2d, sizeof(u32), 6, indices2d)) {
         KFATAL("Failed to create default 2d geometry. Application cannot continue.");

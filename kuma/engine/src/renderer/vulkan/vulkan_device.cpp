@@ -64,7 +64,7 @@ b8 vulkan_device_create(vulkan_context* context) {
         indices[index++] = context->device.transfer_queue_index;
     }
 
-    //VkDeviceQueueCreateInfo queue_create_infos[index_count];
+
     std::vector<VkDeviceQueueCreateInfo, MyAllc<VkDeviceQueueCreateInfo>> queue_create_infos(index_count);
     for (u32 i = 0; i < index_count; ++i) {
         queue_create_infos[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -86,14 +86,38 @@ b8 vulkan_device_create(vulkan_context* context) {
     VkPhysicalDeviceFeatures device_features = {};
     device_features.samplerAnisotropy = VK_TRUE;  // Request Anisotropy
 
+    b8 portability_required = false;
+    u32 available_extension_count = 0;
+    VkExtensionProperties* available_extensions = 0;
+    VK_CHECK(vkEnumerateDeviceExtensionProperties(context->device.physical_device, 0, &available_extension_count, 0));
+    if (available_extension_count != 0) {
+        available_extensions = (VkExtensionProperties*)KMemory::allocate(sizeof(VkExtensionProperties) * available_extension_count, MEMORY_TAG_RENDERER);
+        VK_CHECK(vkEnumerateDeviceExtensionProperties(context->device.physical_device, 0, &available_extension_count, available_extensions));
+        for (u32 i = 0; i < available_extension_count; ++i) {
+            if (!strcmp(available_extensions[i].extensionName, "VK_KHR_portability_subset")) {
+                KINFO("Adding required extension 'VK_KHR_portability_subset'.");
+                portability_required = true;
+                break;
+            }
+        }
+    }
+    KMemory::free(available_extensions, sizeof(VkExtensionProperties) * available_extension_count, MEMORY_TAG_RENDERER);
+
+    u32 extension_count = portability_required ? 2 : 1;
+    std::vector<const char*, MyAllc<const char*>> extension_names;
+    extension_names.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    if (portability_required)
+    {
+        extension_names.push_back("VK_KHR_portability_subset");
+    }
+    
     VkDeviceCreateInfo device_create_info = {};
     device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     device_create_info.queueCreateInfoCount = index_count;
     device_create_info.pQueueCreateInfos = queue_create_infos.data();
     device_create_info.pEnabledFeatures = &device_features;
-    device_create_info.enabledExtensionCount = 1;
-    const char* extension_names = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-    device_create_info.ppEnabledExtensionNames = &extension_names;
+    device_create_info.enabledExtensionCount = extension_count;
+    device_create_info.ppEnabledExtensionNames = extension_names.data();
 
     // Deprecated and ignored, so pass nothing.
     device_create_info.enabledLayerCount = 0;
@@ -284,7 +308,20 @@ b8 select_physical_device(vulkan_context* context) {
 
         VkPhysicalDeviceMemoryProperties memory;
         vkGetPhysicalDeviceMemoryProperties(physical_devices[i], &memory);
-
+        
+        KINFO("Evaluating device: '%s', index %u.", properties.deviceName, i);
+        // Check if device supports local/host visible combo
+        b8 supports_device_local_host_visible = false;
+        for (u32 i = 0; i < memory.memoryTypeCount; ++i) {
+            // Check each memory type to see if its bit is set to 1.
+            if (
+                ((memory.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0) &&
+                ((memory.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0)) {
+                supports_device_local_host_visible = true;
+                break;
+                }
+        }
+        
         // TODO: These requirements should probably be driven by engine
         // configuration.
         vulkan_physical_device_requirements requirements = {};
@@ -363,6 +400,7 @@ b8 select_physical_device(vulkan_context* context) {
             context->device.properties = properties;
             context->device.features = features;
             context->device.memory = memory;
+            context->device.supports_device_local_host_visible = supports_device_local_host_visible;
             break;
         }
     }
@@ -408,13 +446,22 @@ b8 physical_device_meets_requirements(
     // Look at each queue and see what queues it supports
     KINFO("Graphics | Present | Compute | Transfer | Name");
     u8 min_transfer_score = 255;
-    for (u32 i = 0; i < queue_family_count; ++i) {
+    for (u32 i = 0; i < queue_family_count; ++i)
+    {
         u8 current_transfer_score = 0;
 
         // Graphics queue?
-        if (queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+        if (out_queue_family_info->graphics_family_index == -1 && queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             out_queue_family_info->graphics_family_index = i;
             ++current_transfer_score;
+            
+            // If also a present queue, this prioritizes grouping of the 2.
+            VkBool32 supports_present = VK_FALSE;
+            VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &supports_present));
+            if (supports_present) {
+                out_queue_family_info->present_family_index = i;
+                ++current_transfer_score;
+            }
         }
 
         // Compute queue?
@@ -432,12 +479,24 @@ b8 physical_device_meets_requirements(
                 out_queue_family_info->transfer_family_index = i;
             }
         }
+    }
+        // If a present queue hasn't been found, iterate again and take the first one.
+        // This should only happen if there is a queue that supports graphics but NOT
+        // present.
+        if (out_queue_family_info->present_family_index == -1) {
+            for (u32 i = 0; i < queue_family_count; ++i) {
+                VkBool32 supports_present = VK_FALSE;
+                VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &supports_present));
+                if (supports_present) {
+                    out_queue_family_info->present_family_index = i;
 
-        // Present queue?
-        VkBool32 supports_present = VK_FALSE;
-        VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &supports_present));
-        if (supports_present) {
-            out_queue_family_info->present_family_index = i;
+                    // If they differ, bleat about it and move on. This is just here for troubleshooting
+                    // purposes.
+                    if (out_queue_family_info->present_family_index != out_queue_family_info->graphics_family_index) {
+                        KWARN("Warning: Different queue index used for present vs graphics: %u.", i);
+                    }
+                    break;
+                }
         }
     }
 

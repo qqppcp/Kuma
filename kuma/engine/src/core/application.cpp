@@ -116,26 +116,34 @@ b8 application_create(game* game_inst) {
         return false;
     }
 
+    // Memory system must be the first thing to be stood up.
+    memory_system_configuration memory_system_config = {};
+    memory_system_config.total_alloc_size = GIBIBYTES(1);
+    if (!KMemory::memory_system_initialize(memory_system_config)) {
+        KERROR("Failed to initialize memory system; shutting down.");
+        return false;
+    }
+
+    // Allocate the game state.
+    game_inst->state = KMemory::allocate(game_inst->state_memory_requirement, MEMORY_TAG_GAME);
+
+    // Stand up the application state.
     game_inst->application_state = KMemory::allocate(sizeof(application_state), MEMORY_TAG_APPLICATION);
     app_state = static_cast<application_state*>(game_inst->application_state);
     app_state->game_inst = game_inst;
     app_state->is_running = false;
     app_state->is_suspended = false;
 
+    // Create a linear allocator for all systems (except memory) to use.
     u64 systems_allocator_total_size = 64 * 1024 * 1024;  // 64 mb
     linear_allocator_create(systems_allocator_total_size, 0, &app_state->systems_allocator);
 
-    // Initialize subsystems.
+    // Initialize other subsystems.
 
     // Events
     event_system_initialize(&app_state->event_system_memory_requirement, 0);
     app_state->event_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->event_system_memory_requirement);
     event_system_initialize(&app_state->event_system_memory_requirement, app_state->event_system_state);
-    
-    // Memory
-    KMemory::memory_system_initialize(&app_state->memory_system_memory_requirement, 0);
-    app_state->memory_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->memory_system_memory_requirement);
-    KMemory::memory_system_initialize(&app_state->memory_system_memory_requirement, app_state->memory_system_state);
 
     // Logging
     initialize_logging(&app_state->logging_system_memory_requirement, 0);
@@ -217,7 +225,7 @@ b8 application_create(game* game_inst) {
     geometry_system_config geometry_sys_config;
     geometry_sys_config.max_geometry_count = 4096;
     geometry_system_initialize(&app_state->geometry_system_memory_requirement, 0, geometry_sys_config);
-    app_state->geometry_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->material_system_memory_requirement);
+    app_state->geometry_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->geometry_system_memory_requirement);
     if (!geometry_system_initialize(&app_state->geometry_system_memory_requirement, app_state->geometry_system_state, geometry_sys_config)) {
         KFATAL("Failed to initialize geometry system. Application cannot continue.");
         return false;
@@ -293,7 +301,7 @@ b8 application_run() {
     clock_start(&app_state->clock);
     clock_update(&app_state->clock);
     app_state->last_time = app_state->clock.elapsed;
-    f64 running_time = 0;
+    //running_time = 0;
     u8 frame_count = 0;
     f64 target_frame_seconds = 1.0f / 60;
     
@@ -347,7 +355,7 @@ b8 application_run() {
             // Figure out how long the frame took and, if below
             f64 frame_end_time = platform_get_absolute_time();
             f64 frame_elapsed_time = frame_end_time - frame_start_time;
-            running_time += frame_elapsed_time;
+            //running_time += frame_elapsed_time;
             f64 remaining_seconds = target_frame_seconds - frame_elapsed_time;
 
             if (remaining_seconds > 0) {
@@ -399,9 +407,9 @@ b8 application_run() {
     
     platform_system_shutdown(app_state->platform_system_state);
     
-    KMemory::memory_system_shutdown(app_state->memory_system_state);
     event_system_shutdown(app_state->event_system_state);
-    
+
+    KMemory::memory_system_shutdown();
     return true;
 }
 
