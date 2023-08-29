@@ -42,12 +42,11 @@
     <ClInclude Include="src\renderer\renderer_frontend.h" />
     <ClInclude Include="src\renderer\renderer_types.inl" />
     <ClInclude Include="src\renderer\vulkan\shaders\vulkan_material_shader.h" />
+    <ClInclude Include="src\renderer\vulkan\shaders\vulkan_ui_shader.h" />
     <ClInclude Include="src\renderer\vulkan\vulkan_backend.h" />
     <ClInclude Include="src\renderer\vulkan\vulkan_buffer.h" />
     <ClInclude Include="src\renderer\vulkan\vulkan_command_buffer.h" />
     <ClInclude Include="src\renderer\vulkan\vulkan_device.h" />
-    <ClInclude Include="src\renderer\vulkan\vulkan_fence.h" />
-    <ClInclude Include="src\renderer\vulkan\vulkan_framebuffer.h" />
     <ClInclude Include="src\renderer\vulkan\vulkan_image.h" />
     <ClInclude Include="src\renderer\vulkan\vulkan_pipeline.h" />
     <ClInclude Include="src\renderer\vulkan\vulkan_platform.h" />
@@ -58,6 +57,7 @@
     <ClInclude Include="src\renderer\vulkan\vulkan_utils.h" />
     <ClInclude Include="src\resources\loaders\binary_loader.h" />
     <ClInclude Include="src\resources\loaders\image_loader.h" />
+    <ClInclude Include="src\resources\loaders\loader_utils.h" />
     <ClInclude Include="src\resources\loaders\material_loader.h" />
     <ClInclude Include="src\resources\loaders\text_loader.h" />
     <ClInclude Include="src\resources\resource_types.h" />
@@ -84,12 +84,11 @@
     <ClCompile Include="src\renderer\renderer_backend.cpp" />
     <ClCompile Include="src\renderer\renderer_frontend.cpp" />
     <ClCompile Include="src\renderer\vulkan\shaders\vulkan_material_shader.cpp" />
+    <ClCompile Include="src\renderer\vulkan\shaders\vulkan_ui_shader.cpp" />
     <ClCompile Include="src\renderer\vulkan\vulkan_backend.cpp" />
     <ClCompile Include="src\renderer\vulkan\vulkan_buffer.cpp" />
     <ClCompile Include="src\renderer\vulkan\vulkan_command_buffer.cpp" />
     <ClCompile Include="src\renderer\vulkan\vulkan_device.cpp" />
-    <ClCompile Include="src\renderer\vulkan\vulkan_fence.cpp" />
-    <ClCompile Include="src\renderer\vulkan\vulkan_framebuffer.cpp" />
     <ClCompile Include="src\renderer\vulkan\vulkan_image.cpp" />
     <ClCompile Include="src\renderer\vulkan\vulkan_pipeline.cpp" />
     <ClCompile Include="src\renderer\vulkan\vulkan_renderpass.cpp" />
@@ -98,6 +97,7 @@
     <ClCompile Include="src\renderer\vulkan\vulkan_utils.cpp" />
     <ClCompile Include="src\resources\loaders\binary_loader.cpp" />
     <ClCompile Include="src\resources\loaders\image_loader.cpp" />
+    <ClCompile Include="src\resources\loaders\loader_utils.cpp" />
     <ClCompile Include="src\resources\loaders\material_loader.cpp" />
     <ClCompile Include="src\resources\loaders\text_loader.cpp" />
     <ClCompile Include="src\systems\geometry_system.cpp" />

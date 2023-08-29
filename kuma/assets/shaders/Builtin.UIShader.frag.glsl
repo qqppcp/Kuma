@@ -1,6 +1,6 @@
 #version 450
 
-layout(location = 0) out vec4 out_color;
+layout(location = 0) out vec4 out_colour;
 
 layout(set = 1, binding = 0) uniform local_uniform_object {
     vec4 diffuse_colour;
@@ -15,5 +15,5 @@ layout(location = 1) in struct dto {
 } in_dto;
 
 void main() {
-    out_color = object_ubo.diffuse_colour * texture(diffuse_sampler, in_dto.tex_coord);
+    out_colour =  object_ubo.diffuse_colour * texture(diffuse_sampler, in_dto.tex_coord);
 }

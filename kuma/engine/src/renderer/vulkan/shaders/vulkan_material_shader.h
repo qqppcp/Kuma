@@ -41,7 +41,7 @@ public:
     b8 create(vulkan_context* context);
     void destroy(vulkan_context* context);
     void use(vulkan_context* context);
-    void update_global_state(vulkan_context* context, const global_uniform_object& update_data, f32 delta_time);
+    void update_global_state(vulkan_context* context, f32 delta_time);
     b8 acquire_resources(vulkan_context* context, material* material);
     void release_resources(vulkan_context* context, material* material);
 
