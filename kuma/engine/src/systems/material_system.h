@@ -27,6 +27,22 @@
 //     texture_map diffuse_map;
 // } material;
 
+typedef struct material_shader_uniform_locations {
+    u16 projection;
+    u16 view;
+    u16 diffuse_colour;
+    u16 diffuse_texture;
+    u16 model;
+} material_shader_uniform_locations;
+
+typedef struct ui_shader_uniform_locations {
+    u16 projection;
+    u16 view;
+    u16 diffuse_colour;
+    u16 diffuse_texture;
+    u16 model;
+} ui_shader_uniform_locations;
+
 struct material_system_config {
     u32 max_material_count;
 };
@@ -46,7 +62,34 @@ public:
     static material* acquire_from_config(material_config config);
     static void release_by_name(const char* name);
     static material* get_default_material();
+    
+    /**
+     * @brief Applies global-level data for the material shader id.
+     * 
+     * @param shader_id The identifier of the shader to apply globals for.
+     * @param projection A constant pointer to a projection matrix.
+     * @param view A constant pointer to a view matrix.
+     * @return True on success; otherwise false.
+     */
+    static b8 apply_global(u32 shader_id, const mat4* projection, const mat4* view);
 
+    /**
+     * @brief Applies instance-level material data for the given material.
+     *
+     * @param m A pointer to the material to be applied.
+     * @return True on success; otherwise false.
+     */
+    static b8 apply_instance(material* m);
+
+    /**
+     * @brief Applies local-level material data (typically just model matrix).
+     *
+     * @param m A pointer to the material to be applied.
+     * @param model A constant pointer to the model matrix to be applied.
+     * @return True on success; otherwise false.
+     */
+    static b8 apply_local(material* m, const mat4* model);
+    
     struct material_system_state {
         material_system_config config;
 
@@ -57,6 +100,14 @@ public:
 
         // Hashtable for material lookups.
         hashtable registered_material_table;
+        
+        // Known locations for the material shader.
+        material_shader_uniform_locations material_locations;
+        u32 material_shader_id;
+
+        // Known locations for the UI shader.
+        ui_shader_uniform_locations ui_locations;
+        u32 ui_shader_id;
     };
 
     struct material_reference {

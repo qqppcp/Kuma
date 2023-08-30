@@ -28,7 +28,8 @@ static const char* memory_tag_strings[MEMORY_TAG_MAX_TAGS] = {
     "TRANSFORM  ",
     "ENTITY     ",
     "ENTITY_NODE",
-    "SCENE      " };
+    "SCENE      ",
+    "RESOURCE   "};
 
 KMemory::memory_system_state* KMemory::state_ptr = 0;
 

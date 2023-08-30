@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include <vector>
+#include <cstddef> // For std::size_t
+
+#include "alloc.h"
 #include "defines.h"
 
 
@@ -17,6 +21,7 @@ enum {
     DARRAY_STRIDE,
     DARRAY_FIELD_LENGTH
 };
+
 
 KAPI void* _darray_create(u64 length, u64 stride);
 KAPI void _darray_destroy(void* array);

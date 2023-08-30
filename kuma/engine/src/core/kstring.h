@@ -1,6 +1,9 @@
 ﻿#pragma once
 
+#include <vector>
+
 #include "defines.h"
+#include "containers/alloc.h"
 #include "math/math_types.h"
 
 // Returns the length of the given string.
@@ -178,3 +181,26 @@ KAPI b8 string_to_u64(char* str, u64* u);
  * @return True if parsed successfully; otherwise false.
  */
 KAPI b8 string_to_bool(char* str, b8* b);
+
+/**
+ * @brief Splits the given string by the delimiter provided and stores in the
+ * provided darray. Optionally trims each entry. NOTE: A string allocation
+ * occurs for each entry, and must be freed by the caller.
+ *
+ * @param str The string to be split.
+ * @param delimiter The character to split by.
+ * @param str_darray A pointer to a darray of char arrays to hold the entries. NOTE: must be a darray.
+ * @param trim_entries Trims each entry if true.
+ * @param include_empty Indicates if empty entries should be included.
+ * @return The number of entries yielded by the split operation.
+ */
+KAPI u32 string_split(const char* str, char delimiter, char*** str_darray, b8 trim_entries, b8 include_empty);
+u32 string_split(const char* str, char delimiter, std::vector<char* , MyAllc<char*>>& str_darray, b8 trim_entries, b8 include_empty);
+
+/**
+ * @brief Cleans up string allocations in str_darray, but does not
+ * free the darray itself.
+ *
+ * @param str_darray The darray to be cleaned up.
+ */
+KAPI void string_cleanup_split_array(char** str_darray);

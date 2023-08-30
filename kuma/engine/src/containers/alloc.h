@@ -10,13 +10,13 @@ class MyAllc : public std::allocator<T>
      T* allocate(size_t _Count, const void* _Hint = NULL)  
      {  
          void *rtn = nullptr;  
-         rtn = KMemory::allocate(sizeof(T) * _Count, memory_tag::MEMORY_TAG_ARRAY);
+         rtn = KMemory::allocate(sizeof(T) * _Count, memory_tag::MEMORY_TAG_DARRAY);
          return (T*)rtn;
      }  
   
      void deallocate(T* _Ptr, size_t _Count)  
      {  
-         KMemory::free(_Ptr, sizeof(T) * _Count, memory_tag::MEMORY_TAG_ARRAY);
+         KMemory::free(_Ptr, sizeof(T) * _Count, memory_tag::MEMORY_TAG_DARRAY);
      }  
   
      template<class _Other>  

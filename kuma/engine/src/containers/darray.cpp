@@ -3,6 +3,7 @@
 #include "core/kmemory.h"
 #include "core/logger.h"
 
+
 void* _darray_create(u64 length, u64 stride) {
     u64 header_size = DARRAY_FIELD_LENGTH * sizeof(u64);
     u64 array_size = length * stride;
@@ -53,7 +54,7 @@ void* _darray_push(void* array, const void* value_ptr) {
 
     u64 addr = (u64)array;
     addr += (length * stride);
-    KMemory::copy_memory((void*)addr, value_ptr, stride);
+    KMemory::copy_memory((u64*)addr, value_ptr, stride);
     _darray_field_set(array, DARRAY_LENGTH, length + 1);
     return array;
 }
