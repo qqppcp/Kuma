@@ -25,6 +25,7 @@
 
 // TODO: temp
 #include "math/kmath.h"
+#include "math/geometry_utils.h"
 // TODO: end temp
 
 typedef struct application_state {
@@ -90,24 +91,53 @@ b8 event_on_debug_event(u16 code, void* sender, void* listener_inst, event_conte
         "cobblestone",
         "paving",
         "paving2"};
+    const char* spec_names[3] = {
+        "cobblestone_SPEC",
+        "paving_SPEC",
+        "paving2_SPEC"};
+    const char* normal_names[3] = {
+        "cobblestone_NRM",
+        "paving_NRM",
+        "paving2_NRM"};
     static i8 choice = 2;
 
-    // Save off the old name.
+    // Save off the old names.
     const char* old_name = names[choice];
+    const char* old_spec_name = names[choice];
+    const char* old_norm_name = names[choice];
 
     choice++;
     choice %= 3;
-
-    // Acquire the new texture.
+    
     if (app_state->test_geometry) {
+        // Acquire the new diffuse texture.
         app_state->test_geometry->material->diffuse_map.texture = texture_system::acquire_by_name(names[choice], true);
         if (!app_state->test_geometry->material->diffuse_map.texture) {
-            KWARN("event_on_debug_event no texture! using default");
+            KWARN("event_on_debug_event no diffuse texture! using default");
             app_state->test_geometry->material->diffuse_map.texture = texture_system::get_default_texture();
         }
 
-        // Release the old texture.
+        // Release the old diffuse texture.
         texture_system::release_by_name(old_name);
+        // Acquire the new spec texture.
+        app_state->test_geometry->material->specular_map.texture = texture_system::acquire_by_name(spec_names[choice], true);
+        if (!app_state->test_geometry->material->specular_map.texture) {
+            KWARN("event_on_debug_event no spec texture! using default");
+            app_state->test_geometry->material->specular_map.texture = texture_system::get_default_specular_texture();
+        }
+
+        // Release the old spec texture.
+        texture_system::release_by_name(old_spec_name);
+
+        // Acquire the new normal texture.
+        app_state->test_geometry->material->normal_map.texture = texture_system::acquire_by_name(normal_names[choice], true);
+        if (!app_state->test_geometry->material->normal_map.texture) {
+            KWARN("event_on_debug_event no normal texture! using default");
+            app_state->test_geometry->material->normal_map.texture = texture_system::get_default_normal_texture();
+        }
+
+        // Release the old spec normal.
+        texture_system::release_by_name(old_norm_name);
     }
 
     return true;
@@ -250,8 +280,9 @@ b8 application_create(game* game_inst) {
 
     // TODO: temp 
 
-    // Load up a plane configuration, and load geometry from it.
+    // Load up a cube  configuration, and load geometry from it.
     geometry_config g_config = geometry_system_generate_cube_config(10.0f, 10.0f, 10.0f, 1.0f, 1.0f, "test_cube", "test_material");
+    geometry_generate_tangents(g_config.vertex_count, (vertex_3d*)g_config.vertices, g_config.index_count, (u32*)g_config.indices);
     app_state->test_geometry = geometry_system_acquire_from_config(g_config, true);
 
     // Clean up the allocations for the geometry config.
@@ -358,12 +389,17 @@ b8 application_run() {
             test_render.geometry = app_state->test_geometry;
             //test_render.model = mat4_identity();
             static f32 angle = 0;
-            angle = deg_to_rad(45.0f);
-            //angle += (.5f * delta);
+            //angle = deg_to_rad(45.0f);
+            angle += (.5f * delta);
             // TODO: Something with rotation matrices is messing up directional lighting,
             // in particular on the x-axis it seems. It's fine before rotation.
-            quat rotation = quat_from_axis_angle({0, 1, 0}, angle, true);
-            test_render.model = quat_to_mat4(rotation);  //  quat_to_rotation_matrix(rotation, vec3_zero());
+            quat rotation = quat_from_axis_angle({0, 1, 0}, angle, false);
+            mat4 t = mat4_translation(vec3_zero());
+            mat4 r = quat_to_mat4(rotation);  //  quat_to_rotation_matrix(rotation, vec3_zero());
+            mat4 s = mat4_scale(vec3_one());
+            t = mat4_mul(r, t);
+            t = mat4_mul(s, t);
+            test_render.model = t;
             
             packet.geometry_count = 1;
             packet.geometries = &test_render;

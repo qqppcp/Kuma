@@ -35,6 +35,8 @@ typedef struct material_shader_uniform_locations {
     u16 shininess;
     u16 diffuse_colour;
     u16 diffuse_texture;
+    u16 specular_texture;
+    u16 normal_texture;
     u16 model;
 } material_shader_uniform_locations;
 

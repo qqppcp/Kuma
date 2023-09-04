@@ -182,6 +182,26 @@ texture* texture_system::get_default_texture()
     return 0;
 }
 
+texture* texture_system::get_default_specular_texture()
+{
+    if (state_ptr) {
+        return &state_ptr->default_specular_texture;
+    }
+
+    KERROR("texture_system_get_default_specular_texture called before texture system initialization! Null pointer returned.");
+    return 0;
+}
+
+texture* texture_system::get_default_normal_texture()
+{
+    if (state_ptr) {
+        return &state_ptr->default_normal_texture;
+    }
+
+    KERROR("texture_system_get_default_normal_texture called before texture system initialization! Null pointer returned.");
+    return 0;
+}
+
 b8 texture_system::create_default_textures(texture_system_state* state)
 {
     // NOTE: Create default texture, a 256x256 blue/white checkerboard pattern.
@@ -222,6 +242,47 @@ b8 texture_system::create_default_textures(texture_system_state* state)
     // Manually set the texture generation to invalid since this is a default texture.
     state->default_texture.generation = INVALID_ID;
 
+    // Specular texture.
+    KTRACE("Creating default specular texture...");
+    u8 spec_pixels[16 * 16 * 4];
+    // Default spec map is black (no specular)
+    KMemory::set_memory(spec_pixels, 0, sizeof(u8) * 16 * 16 * 4);
+    string_ncopy(state->default_specular_texture.name, DEFAULT_SPECULAR_TEXTURE_NAME, TEXTURE_NAME_MAX_LENGTH);
+    state->default_specular_texture.width = 16;
+    state->default_specular_texture.height = 16;
+    state->default_specular_texture.channel_count = 4;
+    state->default_specular_texture.generation = INVALID_ID;
+    state->default_specular_texture.has_transparency = false;
+    renderer_create_texture(spec_pixels, &state->default_specular_texture);
+    // Manually set the texture generation to invalid since this is a default texture.
+    state->default_specular_texture.generation = INVALID_ID;
+
+    // Normal texture.
+    KTRACE("Creating default normal texture...");
+    u8 normal_pixels[16 * 16 * 4];  // w * h * channels
+    KMemory::set_memory(normal_pixels, 0, sizeof(u8) * 16 * 16 * 4);
+
+    // Each pixel.
+    for (u64 row = 0; row < 16; ++row) {
+        for (u64 col = 0; col < 16; ++col) {
+            u64 index = (row * 16) + col;
+            u64 index_bpp = index * channels;
+            // Set blue, z-axis by default and alpha.
+            normal_pixels[index_bpp + 2] = 255;
+            normal_pixels[index_bpp + 3] = 255;
+        }
+    }
+
+    string_ncopy(state->default_normal_texture.name, DEFAULT_NORMAL_TEXTURE_NAME, TEXTURE_NAME_MAX_LENGTH);
+    state->default_normal_texture.width = 16;
+    state->default_normal_texture.height = 16;
+    state->default_normal_texture.channel_count = 4;
+    state->default_normal_texture.generation = INVALID_ID;
+    state->default_normal_texture.has_transparency = false;
+    renderer_create_texture(normal_pixels, &state->default_normal_texture);
+    // Manually set the texture generation to invalid since this is a default texture.
+    state->default_normal_texture.generation = INVALID_ID;
+    
     return true;
 }
 
@@ -229,6 +290,8 @@ void texture_system::destroy_default_textures(texture_system_state* state)
 {
     if (state) {
         destroy_texture(&state->default_texture);
+        destroy_texture(&state->default_specular_texture);
+        destroy_texture(&state->default_normal_texture);
     }
 }
 

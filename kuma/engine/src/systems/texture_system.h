@@ -4,6 +4,8 @@
 #include "renderer/renderer_types.inl"
 
 #define DEFAULT_TEXTURE_NAME "default"
+#define DEFAULT_SPECULAR_TEXTURE_NAME "default_SPEC"
+#define DEFAULT_NORMAL_TEXTURE_NAME "default_NORM"
 
 struct texture_system_config {
     u32 max_texture_count;
@@ -35,10 +37,14 @@ public:
     static texture* acquire_by_name(const char* name, b8 auto_release);
     static void release_by_name(const char* name);
     static texture* get_default_texture();
+    static texture* get_default_specular_texture();
+    static texture* get_default_normal_texture();
 
     struct texture_system_state {
         texture_system_config config;
         texture default_texture;
+        texture default_specular_texture;
+        texture default_normal_texture;
 
         // Array of registered textures.
         texture* registered_textures;
