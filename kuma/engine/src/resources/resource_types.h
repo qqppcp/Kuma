@@ -58,6 +58,7 @@ typedef struct material_config {
     char* shader_name;
     b8 auto_release;
     vec4 diffuse_colour;
+    f32 shininess;
     char diffuse_map_name[TEXTURE_NAME_MAX_LENGTH];
 } material_config;
 typedef struct material {
@@ -67,6 +68,7 @@ typedef struct material {
     char name[MATERIAL_NAME_MAX_LENGTH];
     vec4 diffuse_colour;
     texture_map diffuse_map;
+    f32 shininess;
     u32 shader_id;
 } material;
 

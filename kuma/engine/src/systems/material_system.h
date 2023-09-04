@@ -30,6 +30,9 @@
 typedef struct material_shader_uniform_locations {
     u16 projection;
     u16 view;
+    u16 ambient_colour;
+    u16 view_position;
+    u16 shininess;
     u16 diffuse_colour;
     u16 diffuse_texture;
     u16 model;
@@ -69,9 +72,11 @@ public:
      * @param shader_id The identifier of the shader to apply globals for.
      * @param projection A constant pointer to a projection matrix.
      * @param view A constant pointer to a view matrix.
+     * @param ambient_colour The ambient colour of the scene.
+     * @param view_position The camera position.
      * @return True on success; otherwise false.
      */
-    static b8 apply_global(u32 shader_id, const mat4* projection, const mat4* view);
+    static b8 apply_global(u32 shader_id, const mat4* projection, const mat4* view, const vec4* ambient_colour, const vec3* view_position);
 
     /**
      * @brief Applies instance-level material data for the given material.

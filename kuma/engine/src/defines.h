@@ -144,3 +144,12 @@ KINLINE u64 get_aligned(u64 operand, u64 granularity) {
 KINLINE range get_aligned_range(u64 offset, u64 size, u64 granularity) {
  return {get_aligned(offset, granularity), get_aligned(size, granularity)};
 }
+
+
+#include <memory>
+
+template <typename T>
+using UNIQUE_PTR = std::unique_ptr<T>;
+
+template <typename T>
+using SHARED_PTR = std::shared_ptr<T>;
