@@ -95,13 +95,9 @@ b8 shader_loader_load(struct resource_loader* self, const char* name, resource* 
             resource_data->renderpass_name = string_duplicate(trimmed_value);
         } else if (strings_equali(trimmed_var_name, "stages")) {
             // Parse the stages
-            //char** stage_names = static_cast<char**>(darray_create(char*));
-            std::vector<char* , MyAllc<char*>> stage_names;
-            u32 count = string_split(trimmed_value, ',', stage_names, true, true);
-            for (auto name : stage_names)
-            {
-                resource_data->stage_names = (char**)_darray_push(resource_data->stage_names, &name);
-            }
+            char** stage_names = static_cast<char**>(darray_create(char*));
+            u32 count = string_split(trimmed_value, ',', &stage_names, true, true);
+
             // Ensure stage name and stage file name count are the same, as they should align.
             if (resource_data->stage_count == 0) {
                 resource_data->stage_count = count;
@@ -109,38 +105,28 @@ b8 shader_loader_load(struct resource_loader* self, const char* name, resource* 
                 KERROR("shader_loader_load: Invalid file layout. Count mismatch between stage names and stage filenames.");
             }
             // Parse each stage and add the right type to the array.
-            shader_stage stage;
             for (u8 i = 0; i < resource_data->stage_count; ++i) {
                 if (strings_equali(stage_names[i], "frag") || strings_equali(stage_names[i], "fragment")) {
-                    stage = SHADER_STAGE_FRAGMENT;
-                    resource_data->stages = (shader_stage*)_darray_push(resource_data->stages, &stage);
+                    darray_push(resource_data->stages, SHADER_STAGE_FRAGMENT);
                 } else if (strings_equali(stage_names[i], "vert") || strings_equali(stage_names[i], "vertex")) {
-                    stage = SHADER_STAGE_VERTEX;
-                    resource_data->stages = (shader_stage*)_darray_push(resource_data->stages, &stage);
+                    darray_push(resource_data->stages, SHADER_STAGE_VERTEX);
                 } else if (strings_equali(stage_names[i], "geom") || strings_equali(stage_names[i], "geometry")) {
-                    stage = SHADER_STAGE_GEOMETRY;
-                    resource_data->stages = (shader_stage*)_darray_push(resource_data->stages, &stage);
+                    darray_push(resource_data->stages, SHADER_STAGE_GEOMETRY);
                 } else if (strings_equali(stage_names[i], "comp") || strings_equali(stage_names[i], "compute")) {
-                    stage = SHADER_STAGE_COMPUTE;
-                    resource_data->stages = (shader_stage*)_darray_push(resource_data->stages, &stage);
+                    darray_push(resource_data->stages, SHADER_STAGE_COMPUTE);
                 } else {
                     KERROR("shader_loader_load: Invalid file layout. Unrecognized stage '%s'", stage_names[i]);
                 }
             }
         } else if (strings_equali(trimmed_var_name, "stagefiles")) {
             // Parse the stage file names
-            //resource_data->stage_filenames = static_cast<char**>(darray_create(char*));
-            std::vector<char* , MyAllc<char*>> stagefiles;
-            u32 count = string_split(trimmed_value, ',', stagefiles, true, true);
+            resource_data->stage_filenames = static_cast<char**>(darray_create(char*));
+            u32 count = string_split(trimmed_value, ',', &resource_data->stage_filenames, true, true);
             // Ensure stage name and stage file name count are the same, as they should align.
             if (resource_data->stage_count == 0) {
                 resource_data->stage_count = count;
             } else if (resource_data->stage_count != count) {
                 KERROR("shader_loader_load: Invalid file layout. Count mismatch between stage names and stage filenames.");
-            }
-            for (auto name : stagefiles)
-            {
-                resource_data->stage_filenames = (char**)_darray_push(resource_data->stage_filenames, &name);
             }
         } else if (strings_equali(trimmed_var_name, "use_instance")) {
             string_to_bool(trimmed_value, &resource_data->use_instances);
@@ -198,7 +184,7 @@ b8 shader_loader_load(struct resource_loader* self, const char* name, resource* 
                 attribute.name = string_duplicate(fields[1]);
 
                 // Add the attribute.
-                resource_data->attributes = (shader_attribute_config*)_darray_push(resource_data->attributes, &attribute);
+                darray_push(resource_data->attributes, attribute);
                 resource_data->attribute_count++;
             }
 
@@ -274,7 +260,7 @@ b8 shader_loader_load(struct resource_loader* self, const char* name, resource* 
                 uniform.name = string_duplicate(fields[2]);
 
                 // Add the attribute.
-                resource_data->uniforms = (shader_uniform_config*)_darray_push(resource_data->uniforms, &uniform);
+                darray_push(resource_data->uniforms, uniform);
                 resource_data->uniform_count++;
             }
 

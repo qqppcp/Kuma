@@ -78,6 +78,8 @@ typedef struct material {
     texture_map normal_map;
     f32 shininess;
     u32 shader_id;
+    /** @brief Synced to the renderer's current frame number when the material has been applied that frame. */
+    u32 render_frame_number;
 } material;
 
 #define GEOMETRY_NAME_MAX_LENGTH 256
@@ -93,6 +95,12 @@ typedef struct geometry {
     char name[GEOMETRY_NAME_MAX_LENGTH];
     material* material;
 } geometry;
+
+typedef struct mesh {
+    u16 geometry_count;
+    geometry** geometries;
+    mat4 model;
+} mesh;
 
 /** @brief Shader stages available in the system. */
 typedef enum shader_stage {

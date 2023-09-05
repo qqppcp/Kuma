@@ -38,6 +38,7 @@ typedef struct material_shader_uniform_locations {
     u16 specular_texture;
     u16 normal_texture;
     u16 model;
+    u16 render_mode;
 } material_shader_uniform_locations;
 
 typedef struct ui_shader_uniform_locations {
@@ -76,9 +77,10 @@ public:
      * @param view A constant pointer to a view matrix.
      * @param ambient_colour The ambient colour of the scene.
      * @param view_position The camera position.
+     * @param render_mode The render mode.
      * @return True on success; otherwise false.
      */
-    static b8 apply_global(u32 shader_id, const mat4* projection, const mat4* view, const vec4* ambient_colour, const vec3* view_position);
+    static b8 apply_global(u32 shader_id, const mat4* projection, const mat4* view, const vec4* ambient_colour, const vec3* view_position, u32 render_mode);
 
     /**
      * @brief Applies instance-level material data for the given material.

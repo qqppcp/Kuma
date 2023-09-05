@@ -365,7 +365,7 @@ b8 add_attribute(shader* shader, const shader_attribute_config* config) {
     attrib.name = string_duplicate(config->name);
     attrib.size = size;
     attrib.type = config->type;
-    shader->attributes = (shader_attribute*)_darray_push(shader->attributes, &attrib);
+    darray_push(shader->attributes, attrib);
 
     return true;
 }
@@ -397,7 +397,7 @@ b8 add_sampler(shader* shader, shader_uniform_config* config) {
         }
         location = global_texture_count;
         auto texture = texture_system::get_default_texture();
-        shader->global_textures = (::texture**)_darray_push(shader->global_textures, &texture);
+        darray_push(shader->global_textures, texture);
     } else {
         // Otherwise, it's instance-level, so keep count of how many need to be added during the resource acquisition.
         if (shader->instance_texture_count + 1 > state_ptr->config.max_instance_textures) {
@@ -492,7 +492,7 @@ b8 uniform_add(shader* shader, const char* uniform_name, u32 size, shader_unifor
         KERROR("Failed to add uniform.");
         return false;
     }
-    shader->uniforms = (shader_uniform*)_darray_push(shader->uniforms, &entry);
+    darray_push(shader->uniforms, entry);
 
     if (!is_sampler) {
         if (entry.scope == SHADER_SCOPE_GLOBAL) {

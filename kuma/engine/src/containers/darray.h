@@ -54,11 +54,19 @@ KAPI void* _darray_insert_at(void* array, u64 index, void* value_ptr);
 //     K temp = value;
 //     array = (T*)_darray_push(array, &temp);
 // }
+
 #define darray_push(array, value)           \
     {                                       \
-        auto temp = value;         \
-        _darray_push(array, &temp); \
+        decltype(value) temp = value;         \
+        array = reinterpret_cast<decltype(array)>(_darray_push(array, &temp)); \
     }
+
+#define darray_insert_at(array, index, value)           \
+    {                                                   \
+        decltype(value) temp = value;       /              \
+        array = reinterpret_cast<decltype(array)>(_darray_insert_at(array, index, &temp)); \
+    }
+
 // NOTE: could use __auto_type for temp above, but intellisense
 // for VSCode flags it as an unknown type. typeof() seems to
 // work just fine, though. Both are GNU extensions.
@@ -66,11 +74,6 @@ KAPI void* _darray_insert_at(void* array, u64 index, void* value_ptr);
 #define darray_pop(array, value_ptr) \
     _darray_pop(array, value_ptr)
 
-#define darray_insert_at(array, index, value)           \
-    {                                                   \
-        auto temp = value;                     \
-        _darray_insert_at(array, index, &temp); \
-    }
 
 #define darray_pop_at(array, index, value_ptr) \
     _darray_pop_at(array, index, value_ptr)
