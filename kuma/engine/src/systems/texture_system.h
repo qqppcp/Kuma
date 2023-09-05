@@ -41,6 +41,7 @@ public:
     static texture* get_default_diffuse_texture();
     static texture* get_default_specular_texture();
     static texture* get_default_normal_texture();
+    static texture* acquire_cube(const char* name, b8 auto_release);
 
     static texture* aquire_writeable(const char* name, u32 width, u32 height, u8 channel_count, b8 has_transparency);
     static texture* wrap_internal(const char* name, u32 width, u32 height, u8 channel_count, b8 has_transparency, b8 is_writeable, b8 register_texture, void* internal_data);
@@ -73,5 +74,6 @@ private:
     static void destroy_default_textures(texture_system_state* state);
     static b8 load_texture(const char* texture_name, texture* t);
     static void destroy_texture(texture* t);
-    static b8 process_texture_reference(const char* name, i8 reference_diff, b8 auto_release, b8 skip_load, u32* out_texture_id);
+    static b8 process_texture_reference(const char* name, texture_type type, i8 reference_diff, b8 auto_release, b8 skip_load, u32* out_texture_id);
+    static b8 load_cube_textures(const char* name, const char texture_names[6][TEXTURE_NAME_MAX_LENGTH], texture* t);
 };

@@ -2,4 +2,6 @@ D:/VulkanSDK/1.3.243.0/Bin/glslangValidator.exe -V Builtin.MaterialShader.vert.g
 D:/VulkanSDK/1.3.243.0/Bin/glslangValidator.exe -V Builtin.MaterialShader.frag.glsl -o Builtin.MaterialShader.frag.spv
 D:/VulkanSDK/1.3.243.0/Bin/glslangValidator.exe -V Builtin.UIShader.vert.glsl -o Builtin.UIShader.vert.spv
 D:/VulkanSDK/1.3.243.0/Bin/glslangValidator.exe -V Builtin.UIShader.frag.glsl -o Builtin.UIShader.frag.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslangValidator.exe -V Builtin.SkyboxShader.vert.glsl -o Builtin.SkyboxShader.vert.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslangValidator.exe -V Builtin.SkyboxShader.frag.glsl -o Builtin.SkyboxShader.frag.spv
 pause
