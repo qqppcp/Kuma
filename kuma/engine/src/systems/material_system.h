@@ -86,9 +86,10 @@ public:
      * @brief Applies instance-level material data for the given material.
      *
      * @param m A pointer to the material to be applied.
+     * @param needs_update Indicates if material internals require updating, or if they should just be bound.
      * @return True on success; otherwise false.
      */
-    static b8 apply_instance(material* m);
+    static b8 apply_instance(material* m, b8 needs_update);
 
     /**
      * @brief Applies local-level material data (typically just model matrix).

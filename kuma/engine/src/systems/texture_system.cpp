@@ -182,6 +182,16 @@ texture* texture_system::get_default_texture()
     return 0;
 }
 
+texture* texture_system::get_default_diffuse_texture()
+{
+    if (state_ptr) {
+        return &state_ptr->default_diffuse_texture;
+    }
+
+    KERROR("texture_system_get_default_diffuse_texture called before texture system initialization! Null pointer returned.");
+    return 0;
+}
+
 texture* texture_system::get_default_specular_texture()
 {
     if (state_ptr) {
@@ -242,6 +252,21 @@ b8 texture_system::create_default_textures(texture_system_state* state)
     // Manually set the texture generation to invalid since this is a default texture.
     state->default_texture.generation = INVALID_ID;
 
+    // Diffuse texture.
+    KTRACE("Creating default diffuse texture...");
+    u8 diff_pixels[16 * 16 * 4];
+    // Default diffuse map is all white.
+    KMemory::set_memory(diff_pixels, 255, sizeof(u8) * 16 * 16 * 4);
+    string_ncopy(state->default_diffuse_texture.name, DEFAULT_DIFFUSE_TEXTURE_NAME, TEXTURE_NAME_MAX_LENGTH);
+    state->default_diffuse_texture.width = 16;
+    state->default_diffuse_texture.height = 16;
+    state->default_diffuse_texture.channel_count = 4;
+    state->default_diffuse_texture.generation = INVALID_ID;
+    state->default_diffuse_texture.has_transparency = false;
+    renderer_create_texture(diff_pixels, &state->default_diffuse_texture);
+    // Manually set the texture generation to invalid since this is a default texture.
+    state->default_diffuse_texture.generation = INVALID_ID;
+    
     // Specular texture.
     KTRACE("Creating default specular texture...");
     u8 spec_pixels[16 * 16 * 4];
@@ -292,6 +317,7 @@ void texture_system::destroy_default_textures(texture_system_state* state)
 {
     if (state) {
         destroy_texture(&state->default_texture);
+        destroy_texture(&state->default_diffuse_texture);
         destroy_texture(&state->default_specular_texture);
         destroy_texture(&state->default_normal_texture);
     }
