@@ -37,6 +37,7 @@
     <ClInclude Include="src\math\geometry_utils.h" />
     <ClInclude Include="src\math\kmath.h" />
     <ClInclude Include="src\math\math_types.h" />
+    <ClInclude Include="src\math\transform.h" />
     <ClInclude Include="src\memory\dynamic_allocator.h" />
     <ClInclude Include="src\memory\linear_allocator.h" />
     <ClInclude Include="src\platform\filesystem.h" />
@@ -83,6 +84,7 @@
     <ClCompile Include="src\core\logger.cpp" />
     <ClCompile Include="src\math\geometry_utils.cpp" />
     <ClCompile Include="src\math\kmath.cpp" />
+    <ClCompile Include="src\math\transform.cpp" />
     <ClCompile Include="src\memory\dynamic_allocator.cpp" />
     <ClCompile Include="src\memory\linear_allocator.cpp" />
     <ClCompile Include="src\platform\filesystem.cpp" />

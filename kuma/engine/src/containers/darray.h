@@ -48,13 +48,6 @@ KAPI void* _darray_insert_at(void* array, u64 index, void* value_ptr);
 
 #define darray_destroy(array) _darray_destroy(array);
 
-// template<typename T, typename K>
-// void darray_push(T* array, K value)
-// {
-//     K temp = value;
-//     array = (T*)_darray_push(array, &temp);
-// }
-
 #define darray_push(array, value)           \
     {                                       \
         decltype(value) temp = value;         \
