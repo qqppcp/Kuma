@@ -269,12 +269,24 @@ void renderer_set_view(mat4 view, vec3 view_position) {
     state_ptr->view_position = view_position;
 }
 
-void renderer_create_texture(const u8* pixels, struct texture* texture) {
-    state_ptr->backend.create_texture(pixels, texture);
+void renderer_texture_create(const u8* pixels, struct texture* texture) {
+    state_ptr->backend.texture_create(pixels, texture);
 }
 
-void renderer_destroy_texture(struct texture* texture) {
-    state_ptr->backend.destroy_texture(texture);
+void renderer_texture_destroy(struct texture* texture) {
+    state_ptr->backend.texture_destroy(texture);
+}
+
+void renderer_texture_create_writeable(texture* t) {
+    state_ptr->backend.texture_create_writeable(t);
+}
+
+void renderer_texture_write_data(texture* t, u32 offset, u32 size, const u8* pixels) {
+    state_ptr->backend.texture_write_data(t, offset, size, pixels);
+}
+
+void renderer_texture_resize(texture* t, u32 new_width, u32 new_height) {
+    state_ptr->backend.texture_resize(t, new_width, new_height);
 }
 
 b8 renderer_create_geometry(geometry* geometry, u32 vertex_size, u32 vertex_count, const void* vertices, u32 index_size, u32 index_count, const void* indices) {
@@ -332,8 +344,8 @@ b8 renderer_shader_apply_instance(shader* s, b8 needs_update) {
     return state_ptr->backend.shader_apply_instance(s, needs_update);
 }
 
-b8 renderer_shader_acquire_instance_resources(shader* s, u32* out_instance_id) {
-    return state_ptr->backend.shader_acquire_instance_resources(s, out_instance_id);
+b8 renderer_shader_acquire_instance_resources(shader* s, texture_map** maps, u32* out_instance_id) {
+    return state_ptr->backend.shader_acquire_instance_resources(s, maps, out_instance_id);
 }
 
 b8 renderer_shader_release_instance_resources(shader* s, u32 instance_id) {
@@ -342,4 +354,12 @@ b8 renderer_shader_release_instance_resources(shader* s, u32 instance_id) {
 
 b8 renderer_set_uniform(shader* s, shader_uniform* uniform, const void* value) {
     return state_ptr->backend.shader_set_uniform(s, uniform, value);
+}
+
+b8 renderer_texture_map_acquire_resources(struct texture_map* map) {
+    return state_ptr->backend.texture_map_acquire_resources(map);
+}
+
+void renderer_texture_map_release_resources(struct texture_map* map) {
+    state_ptr->backend.texture_map_release_resources(map);
 }

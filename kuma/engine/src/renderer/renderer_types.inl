@@ -50,8 +50,12 @@ typedef struct renderer_backend {
     b8 (*begin_renderpass)(struct renderer_backend* backend, u8 renderpass_id);
     b8 (*end_renderpass)(struct renderer_backend* backend, u8 renderpass_id);
     
-    void (*create_texture)(const u8* pixels, struct texture* texture);
-    void (*destroy_texture)(struct texture* texture);
+    void (*texture_create)(const u8* pixels, struct texture* texture);
+    void (*texture_destroy)(struct texture* texture);
+    
+    void (*texture_create_writeable)(texture* t);
+    void (*texture_resize)(texture* t, u32 new_width, u32 new_height);
+    void (*texture_write_data)(texture* t, u32 offset, u32 size, const u8* pixels);
 
     b8 (*create_geometry)(geometry* geometry, u32 vertex_size, u32 vertex_count, const void* vertices, u32 index_size, u32 index_count, const void* indices);
     void (*destroy_geometry)(geometry* geometry);
@@ -64,9 +68,25 @@ typedef struct renderer_backend {
     b8 (*shader_bind_instance)(struct shader* s, u32 instance_id);
     b8 (*shader_apply_globals)(struct shader* s);
     b8 (*shader_apply_instance)(struct shader* s, b8 needs_update);
-    b8 (*shader_acquire_instance_resources)(struct shader* s, u32* out_instance_id);
+    b8 (*shader_acquire_instance_resources)(struct shader* s, texture_map** maps, u32* out_instance_id);
     b8 (*shader_release_instance_resources)(struct shader* s, u32 instance_id);
     b8 (*shader_set_uniform)(struct shader* frontend_shader, struct shader_uniform* uniform, const void* value);
+
+    /**
+     * @brief Acquires internal resources for the given texture map.
+     * 
+     * @param map A pointer to the texture map to obtain resources for.
+     * @return True on success; otherwise false.
+     */
+    b8 (*texture_map_acquire_resources)(struct texture_map* map);
+
+    /**
+     * @brief Releases internal resources for the given texture map.
+     * 
+     * @param map A pointer to the texture map to release resources from.
+     */
+    void (*texture_map_release_resources)(struct texture_map* map);
+    
 } renderer_backend;
 
 typedef struct render_packet {

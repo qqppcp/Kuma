@@ -100,9 +100,7 @@ typedef struct vulkan_swapchain {
     u8 max_frames_in_flight;
     VkSwapchainKHR handle;
     u32 image_count;
-    VkImage* images;
-    VkImageView* views;
-
+    texture** render_textures;
     vulkan_image depth_attachment;
     
     // Framebuffers used for on-screen rendering, one per frame
@@ -258,10 +256,10 @@ typedef struct vulkan_shader_instance_state {
     vulkan_shader_descriptor_set_state descriptor_set_state;
 
     /**
-     * @brief Instance texture pointers, which are used during rendering. These
+     * @brief Instance texture map pointers, which are used during rendering. These
      * are set by calls to set_sampler.
      */
-    struct texture** instance_textures;
+    struct texture_map** instance_texture_maps;
 } vulkan_shader_instance_state;
 
 /**
@@ -366,8 +364,3 @@ typedef struct vulkan_context {
     i32 (*find_memory_index)(u32 type_filter, u32 property_flags);
     
 } vulkan_context;
-
-typedef struct vulkan_texture_data {
-    vulkan_image image;
-    VkSampler sampler;
-} vulkan_texture_data;
