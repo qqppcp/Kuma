@@ -67,6 +67,12 @@ b8 KMemory::memory_system_initialize(memory_system_configuration config) {
         return false;
             }
 
+    // Create allocation mutex
+    if (!kmutex_create(&state_ptr->allocation_mutex)) {
+        KFATAL("Unable to create allocation mutex!");
+        return false;
+    }
+    
     KDEBUG("Memory system successfully allocated %llu bytes.", config.total_alloc_size);
     return true;
 }
@@ -92,11 +98,18 @@ void* KMemory::allocate(u64 size, memory_tag tag)
     void* block = 0;
     
     if (state_ptr) {
+        // Make sure multithreaded requests don't trample each other.
+        if (!kmutex_lock(&state_ptr->allocation_mutex)) {
+            KFATAL("Error obtaining mutex lock during allocation.");
+            return 0;
+        }
+
         state_ptr->stats.total_allocated += size;
         state_ptr->stats.tagged_allocations[tag] += size;
         state_ptr->alloc_count++;
         
         block = dynamic_allocator_allocate(&state_ptr->allocator, size);
+        kmutex_unlock(&state_ptr->allocation_mutex);
     } else {
         // If the system is not up yet, warn about it but give memory for now.
         KWARN("kallocate called before the memory system is initialized.");
@@ -121,9 +134,17 @@ void KMemory::free(void* block, u64 size, memory_tag tag)
 
     if (state_ptr)
     {
+        // Make sure multithreaded requests don't trample each other.
+        if (!kmutex_lock(&state_ptr->allocation_mutex)) {
+            KFATAL("Unable to obtain mutex lock for free operation. Heap corruption is likely.");
+            return;
+        }
+
         state_ptr->stats.total_allocated -= size;
         state_ptr->stats.tagged_allocations[tag] -= size;
         b8 result = dynamic_allocator_free(&state_ptr->allocator, block, size);
+        
+        kmutex_unlock(&state_ptr->allocation_mutex);
 
         // If the free failed, it's possible this is because the allocation was made
         // before this system was started up. Since this absolutely should be an exception

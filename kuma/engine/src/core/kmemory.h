@@ -2,6 +2,7 @@
 
 #include "defines.h"
 #include "memory/dynamic_allocator.h"
+#include "core/kmutex.h"
 
 typedef enum memory_tag {
     // For temporary use. Should be assigned one of the below or have a new tag created.
@@ -59,6 +60,8 @@ public:
         u64 allocator_memory_requirement;
         dynamic_allocator allocator;
         void* allocator_block;
+        // A mutex for allocations/frees
+        kmutex allocation_mutex;
     } ;
     
     static memory_system_state* state_ptr;

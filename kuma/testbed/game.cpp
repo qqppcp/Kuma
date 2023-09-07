@@ -39,11 +39,11 @@ b8 game_update(game* game_inst, f32 delta_time) {
     game_state* state = (game_state*)game_inst->state;
 
     // HACK: temp hack to move camera around.
-    if (input_is_key_down((keys)'A') || input_is_key_down(KEY_LEFT)) {
+    if (input_is_key_down((keys)'Q')) {
         camera_yaw(state->world_camera, 1.0f * delta_time);
     }
 
-    if (input_is_key_down((keys)'D') || input_is_key_down(KEY_RIGHT)) {
+    if (input_is_key_down((keys)'E')) {
         camera_yaw(state->world_camera, -1.0f * delta_time);
     }
 
@@ -65,11 +65,11 @@ b8 game_update(game* game_inst, f32 delta_time) {
         camera_move_backward(state->world_camera, temp_move_speed * delta_time);
     }
 
-    if (input_is_key_down((keys)'Q')) {
+    if (input_is_key_down((keys)'A') || input_is_key_down(KEY_LEFT)) {
         camera_move_left(state->world_camera, temp_move_speed * delta_time);
     }
 
-    if (input_is_key_down((keys)'E')) {
+    if (input_is_key_down((keys)'D') || input_is_key_down(KEY_RIGHT)) {
         camera_move_right(state->world_camera, temp_move_speed * delta_time);
     }
 
@@ -108,7 +108,14 @@ b8 game_update(game* game_inst, f32 delta_time) {
         data.data.i32[0] = RENDERER_VIEW_MODE_DEFAULT;
         event_fire(EVENT_CODE_SET_RENDER_MODE, game_inst, data);
     }
-    
+
+    // TODO: temp
+    // Bind a key to load up some data.
+    if (input_is_key_up((keys)'L') && input_was_key_down((keys)'L')) {
+        event_context context = {};
+        event_fire(EVENT_CODE_DEBUG1, game_inst, context);
+    }
+
     // TODO: end temp
     return true;
 }

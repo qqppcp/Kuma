@@ -17,6 +17,7 @@
 // TODO: temporary
 #include "core/kstring.h"
 #include "core/event.h"
+#include "platform/platform.h"
 
 
 // TODO: end temporary
@@ -225,6 +226,8 @@ b8 renderer_draw_frame(render_packet* packet) {
             state_ptr->resizing = false;
         } else {
             // Skip rendering the frame and try again next time.
+            // NOTE: Simulate a frame being "drawn" at 60 FPS.
+            platform_sleep(16);
             return true;
         }
     }
@@ -362,6 +365,10 @@ void renderer_renderpass_create(renderpass* out_renderpass, f32 depth, u32 stenc
 
 void renderer_renderpass_destroy(renderpass* pass) {
     state_ptr->backend.renderpass_destroy(pass);
+}
+
+b8 renderer_is_multithreaded() {
+    return state_ptr->backend.is_multithreaded();
 }
 
 void regenerate_render_targets() {

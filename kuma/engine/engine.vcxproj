@@ -23,13 +23,16 @@
     <ClInclude Include="src\containers\darray.h" />
     <ClInclude Include="src\containers\freelist.h" />
     <ClInclude Include="src\containers\hashtable.h" />
+    <ClInclude Include="src\containers\ring_queue.h" />
     <ClInclude Include="src\core\application.h" />
     <ClInclude Include="src\core\asserts.h" />
     <ClInclude Include="src\core\clock.h" />
     <ClInclude Include="src\core\event.h" />
     <ClInclude Include="src\core\input.h" />
     <ClInclude Include="src\core\kmemory.h" />
+    <ClInclude Include="src\core\kmutex.h" />
     <ClInclude Include="src\core\kstring.h" />
+    <ClInclude Include="src\core\kthread.h" />
     <ClInclude Include="src\core\logger.h" />
     <ClInclude Include="src\defines.h" />
     <ClInclude Include="src\entry.h" />
@@ -67,9 +70,11 @@
     <ClInclude Include="src\resources\loaders\mesh_loader.h" />
     <ClInclude Include="src\resources\loaders\shader_loader.h" />
     <ClInclude Include="src\resources\loaders\text_loader.h" />
+    <ClInclude Include="src\resources\mesh.h" />
     <ClInclude Include="src\resources\resource_types.h" />
     <ClInclude Include="src\systems\camera_system.h" />
     <ClInclude Include="src\systems\geometry_system.h" />
+    <ClInclude Include="src\systems\job_system.h" />
     <ClInclude Include="src\systems\material_system.h" />
     <ClInclude Include="src\systems\render_view_system.h" />
     <ClInclude Include="src\systems\resource_system.h" />
@@ -81,6 +86,7 @@
     <ClCompile Include="src\containers\darray.cpp" />
     <ClCompile Include="src\containers\freelist.cpp" />
     <ClCompile Include="src\containers\hashtable.cpp" />
+    <ClCompile Include="src\containers\ring_queue.cpp" />
     <ClCompile Include="src\core\application.cpp" />
     <ClCompile Include="src\core\clock.cpp" />
     <ClCompile Include="src\core\event.cpp" />
@@ -117,8 +123,10 @@
     <ClCompile Include="src\resources\loaders\mesh_loader.cpp" />
     <ClCompile Include="src\resources\loaders\shader_loader.cpp" />
     <ClCompile Include="src\resources\loaders\text_loader.cpp" />
+    <ClCompile Include="src\resources\mesh.cpp" />
     <ClCompile Include="src\systems\camera_system.cpp" />
     <ClCompile Include="src\systems\geometry_system.cpp" />
+    <ClCompile Include="src\systems\job_system.cpp" />
     <ClCompile Include="src\systems\material_system.cpp" />
     <ClCompile Include="src\systems\render_view_system.cpp" />
     <ClCompile Include="src\systems\resource_system.cpp" />
