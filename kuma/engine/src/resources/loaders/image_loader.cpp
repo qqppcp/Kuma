@@ -14,8 +14,16 @@
 #define STBI_NO_STDIO
 #include "vendor/stb_image.h"
 
-b8 image_loader_load(struct resource_loader* self, const char* name, void* params, resource* out_resource) {
-    if (!self || !name || !out_resource) {
+image_loader::image_loader()
+{
+    type = RESOURCE_TYPE_IMAGE;
+    custom_type = 0;
+    type_path = "textures";
+}
+
+b8 image_loader::load(const char* name, void* params, resource* out_resource)
+{
+    if (!name || !out_resource) {
         return false;
     }
     
@@ -31,7 +39,7 @@ b8 image_loader_load(struct resource_loader* self, const char* name, void* param
     b8 found = false;
     const char* extensions[IMAGE_EXTENSION_COUNT] = {".tga", ".png", ".jpg", ".bmp"};
     for (u32 i = 0; i < IMAGE_EXTENSION_COUNT; ++i) {
-        string_format(full_file_path, format_str, resource_system_base_path(), self->type_path, name, extensions[i]);
+        string_format(full_file_path, format_str, resource_system::get_base_path(), type_path, name, extensions[i]);
         if (filesystem_exists(full_file_path)) {
             found = true;
             break;
@@ -106,22 +114,10 @@ b8 image_loader_load(struct resource_loader* self, const char* name, void* param
     return true;
 }
 
-void image_loader_unload(struct resource_loader* self, resource* resource)
+void image_loader::unload(resource* resource)
 {
     stbi_image_free(((image_resource_data*)resource->data)->pixels);
-    if (!resource_unload(self, resource, MEMORY_TAG_TEXTURE)) {
-        KWARN("image_loader_unload called with nullptr for self or resource.");
+    if (!resource_unload(resource, MEMORY_TAG_TEXTURE)) {
+        KWARN("image_loader_unload called with nullptr for resource.");
     }
-}
-
-resource_loader image_resource_loader_create()
-{
-    resource_loader loader;
-    loader.type = RESOURCE_TYPE_IMAGE;
-    loader.custom_type = 0;
-    loader.load = image_loader_load;
-    loader.unload = image_loader_unload;
-    loader.type_path = "textures";
-
-    return loader;
 }

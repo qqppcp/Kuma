@@ -109,7 +109,7 @@ material* material_system::acquire_by_name(const char* name)
 {
     // Load material configuration from resource;
     resource material_resource;
-    if (!resource_system_load(name, RESOURCE_TYPE_MATERIAL, 0, &material_resource)) {
+    if (!resource_system::load(name, RESOURCE_TYPE_MATERIAL, 0, &material_resource)) {
         KERROR("Failed to load material resource, returning nullptr.");
         return 0;
     }
@@ -121,7 +121,7 @@ material* material_system::acquire_by_name(const char* name)
     }
 
     // Clean up
-    resource_system_unload(&material_resource);
+    resource_system::unload(&material_resource);
 
     if (!m) {
         KERROR("Failed to load material resource, returning nullptr.");

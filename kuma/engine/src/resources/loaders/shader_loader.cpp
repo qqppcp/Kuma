@@ -14,14 +14,22 @@
 
 #include "platform/filesystem.h"
 
-b8 shader_loader_load(struct resource_loader* self, const char* name, void* params, resource* out_resource) {
-    if (!self || !name || !out_resource) {
+shader_loader::shader_loader()
+{
+    type = RESOURCE_TYPE_SHADER;
+    custom_type = 0;
+    type_path = "shaders";
+}
+
+b8 shader_loader::load(const char* name, void* params, resource* out_resource)
+{
+        if (!name || !out_resource) {
         return false;
     }
 
     char* format_str = (char*)"%s/%s/%s%s";
     char full_file_path[512];
-    string_format(full_file_path, format_str, resource_system_base_path(), self->type_path, name, ".shadercfg");
+    string_format(full_file_path, format_str, resource_system::get_base_path(), type_path, name, ".shadercfg");
 
     file_handle f;
     if (!filesystem_open(full_file_path, FILE_MODE_READ, false, &f)) {
@@ -286,7 +294,8 @@ b8 shader_loader_load(struct resource_loader* self, const char* name, void* para
     return true;
 }
 
-void shader_loader_unload(struct resource_loader* self, resource* resource) {
+void shader_loader::unload(resource* resource)
+{
     shader_config* data = (shader_config*)resource->data;
 
     string_cleanup_split_array(data->stage_filenames);
@@ -317,18 +326,7 @@ void shader_loader_unload(struct resource_loader* self, resource* resource) {
     KMemory::free(data->name, sizeof(char) * (string_length(data->name) + 1), MEMORY_TAG_STRING);
     KMemory::zero_memory(data, sizeof(shader_config));
 
-    if (!resource_unload(self, resource, MEMORY_TAG_RESOURCE)) {
-        KWARN("shader_loader_unload called with nullptr for self or resource.");
+    if (!resource_unload(resource, MEMORY_TAG_RESOURCE)) {
+        KWARN("shader_loader_unload called with nullptr for resource.");
     }
-}
-
-resource_loader shader_resource_loader_create() {
-    resource_loader loader;
-    loader.type = RESOURCE_TYPE_SHADER;
-    loader.custom_type = 0;
-    loader.load = shader_loader_load;
-    loader.unload = shader_loader_unload;
-    loader.type_path = "shaders";
-
-    return loader;
 }

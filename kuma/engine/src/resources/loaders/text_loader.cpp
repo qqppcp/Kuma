@@ -10,14 +10,22 @@
 
 #include "platform/filesystem.h"
 
-b8 text_loader_load(struct resource_loader* self, const char* name, void* params, resource* out_resource) {
-    if (!self || !name || !out_resource) {
+text_loader::text_loader()
+{
+    type = RESOURCE_TYPE_TEXT;
+    custom_type = 0;
+    type_path = "";
+}
+
+b8 text_loader::load(const char* name, void* params, resource* out_resource)
+{
+    if (!name || !out_resource) {
         return false;
     }
 
     char* format_str = (char*)"%s/%s/%s%s";
     char full_file_path[512];
-    string_format(full_file_path, format_str, resource_system_base_path(), self->type_path, name, "");
+    string_format(full_file_path, format_str, resource_system::get_base_path(), type_path, name, "");
     
     file_handle f;
     if (!filesystem_open(full_file_path, FILE_MODE_READ, false, &f)) {
@@ -53,19 +61,9 @@ b8 text_loader_load(struct resource_loader* self, const char* name, void* params
     return true;
 }
 
-void text_loader_unload(struct resource_loader* self, resource* resource) {
-    if (!resource_unload(self, resource, MEMORY_TAG_TEXTURE)) {
-        KWARN("text_loader_unload called with nullptr for self or resource.");
+void text_loader::unload(resource* resource)
+{
+    if (!resource_unload(resource, MEMORY_TAG_TEXTURE)) {
+        KWARN("text_loader_unload called with nullptr for resource.");
     }
-}
-
-resource_loader text_resource_loader_create() {
-    resource_loader loader;
-    loader.type = RESOURCE_TYPE_TEXT;
-    loader.custom_type = 0;
-    loader.load = text_loader_load;
-    loader.unload = text_loader_unload;
-    loader.type_path = "";
-
-    return loader;
 }

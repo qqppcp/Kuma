@@ -4,9 +4,9 @@
 #include "core/logger.h"
 #include "core/kstring.h"
 
-b8 resource_unload(struct resource_loader* self, resource* resource, memory_tag tag) {
-    if (!self || !resource) {
-        KWARN("resource_unload called with nullptr for self or resource.");
+b8 resource_unload(resource* resource, memory_tag tag) {
+    if (!resource) {
+        KWARN("resource_unload called with nullptr for resource.");
         return false;
     }
 

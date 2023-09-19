@@ -266,7 +266,7 @@ void texture_system::texture_load_job_success(void* params)
     KTRACE("Successfully loaded texture '%s'.", texture_params->resource_name);
 
     // Clean up data.
-    resource_system_unload(&texture_params->image_resource);
+    resource_system::unload(&texture_params->image_resource);
     if (texture_params->resource_name) {
         u32 length = string_length(texture_params->resource_name);
         KMemory::free(texture_params->resource_name, sizeof(char) * length + 1, MEMORY_TAG_STRING);
@@ -280,7 +280,7 @@ void texture_system::texture_load_job_fail(void* params)
 
     KERROR("Failed to load texture '%s'.", texture_params->resource_name);
 
-    resource_system_unload(&texture_params->image_resource);
+    resource_system::unload(&texture_params->image_resource);
 }
 
 b8 texture_system::texture_load_job_start(void* params, void* result_data)
@@ -290,7 +290,7 @@ b8 texture_system::texture_load_job_start(void* params, void* result_data)
     image_resource_params resource_params;
     resource_params.flip_y = true;
 
-    b8 result = resource_system_load(load_params->resource_name, RESOURCE_TYPE_IMAGE, &resource_params, &load_params->image_resource);
+    b8 result = resource_system::load(load_params->resource_name, RESOURCE_TYPE_IMAGE, &resource_params, &load_params->image_resource);
 
     image_resource_data* resource_data = (image_resource_data*)load_params->image_resource.data;
 
@@ -447,7 +447,7 @@ b8 texture_system::load_cube_textures(const char* name, const char texture_names
         params.flip_y = false;
 
         resource img_resource;
-        if (!resource_system_load(texture_names[i], RESOURCE_TYPE_IMAGE, &params, &img_resource)) {
+        if (!resource_system::load(texture_names[i], RESOURCE_TYPE_IMAGE, &params, &img_resource)) {
             KERROR("load_cube_textures() - Failed to load image resource for texture '%s'", texture_names[i]);
             return false;
         }
@@ -480,7 +480,7 @@ b8 texture_system::load_cube_textures(const char* name, const char texture_names
         KMemory::copy_memory(pixels + image_size * i, resource_data->pixels, image_size);
 
         // Clean up data.
-        resource_system_unload(&img_resource);
+        resource_system::unload(&img_resource);
     }
 
     // Acquire internal texture resources and upload to GPU.

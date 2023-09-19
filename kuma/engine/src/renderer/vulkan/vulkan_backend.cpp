@@ -1858,7 +1858,7 @@ b8 vulkan_renderer_set_uniform(shader* s, shader_uniform* uniform, const void* v
 b8 create_module(vulkan_shader* shader, vulkan_shader_stage_config config, vulkan_shader_stage* shader_stage) {
     // Read the resource.
     resource binary_resource;
-    if (!resource_system_load(config.file_name, RESOURCE_TYPE_BINARY, 0, &binary_resource)) {
+    if (!resource_system::load(config.file_name, RESOURCE_TYPE_BINARY, 0, &binary_resource)) {
         KERROR("Unable to read shader module: %s.", config.file_name);
         return false;
     }
@@ -1876,7 +1876,7 @@ b8 create_module(vulkan_shader* shader, vulkan_shader_stage_config config, vulka
         &shader_stage->handle));
 
     // Release the resource.
-    resource_system_unload(&binary_resource);
+    resource_system::unload(&binary_resource);
 
     // Shader stage info
     KMemory::zero_memory(&shader_stage->shader_stage_create_info, sizeof(VkPipelineShaderStageCreateInfo));

@@ -2,4 +2,10 @@
 
 #include "systems/resource_system.h"
 
-resource_loader material_resource_loader_create();
+class material_loader : public resource_loader
+{
+public:
+    material_loader();
+    virtual b8 load(const char* name, void* params, resource* out_resource) override;
+    virtual void unload(resource* resource) override;
+};

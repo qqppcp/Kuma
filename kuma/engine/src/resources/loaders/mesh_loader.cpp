@@ -50,95 +50,6 @@ b8 load_ksm_file(file_handle* ksm_file, geometry_config** out_geometries_darray)
 b8 write_ksm_file(const char* path, const char* name, u32 geometry_count, geometry_config* geometries);
 b8 write_kmt_file(const char* directory, material_config* config);
 
-b8 mesh_loader_load(struct resource_loader* self, const char* name, void* params, resource* out_resource) {
-    if (!self || !name || !out_resource) {
-        return false;
-    }
-
-    char* format_str = (char*)"%s/%s/%s%s";
-    file_handle f;
-    // Supported extensions. Note that these are in order of priority when looked up.
-    // This is to prioritize the loading of a binary version of the mesh, followed by
-    // importing various types of meshes to binary types, which would be loaded on the
-    // next run.
-    // TODO: Might be good to be able to specify an override to always import (i.e. skip
-    // binary versions) for debug purposes.
-#define SUPPORTED_FILETYPE_COUNT 2
-    supported_mesh_filetype supported_filetypes[SUPPORTED_FILETYPE_COUNT];
-    supported_filetypes[0] = {(char*)".ksm", MESH_FILE_TYPE_KSM, true};
-    supported_filetypes[1] = {(char*)".obj", MESH_FILE_TYPE_OBJ, false};
-
-    char full_file_path[512];
-    mesh_file_type type = MESH_FILE_TYPE_NOT_FOUND;
-    // Try each supported extension.
-    for (u32 i = 0; i < SUPPORTED_FILETYPE_COUNT; ++i) {
-        string_format(full_file_path, format_str, resource_system_base_path(), self->type_path, name, supported_filetypes[i].extension);
-        // If the file exists, open it and stop looking.
-        if (filesystem_exists(full_file_path)) {
-            if (filesystem_open(full_file_path, FILE_MODE_READ, supported_filetypes[i].is_binary, &f)) {
-                type = supported_filetypes[i].type;
-                break;
-            }
-        }
-    }
-
-    if (type == MESH_FILE_TYPE_NOT_FOUND) {
-        KERROR("Unable to find mesh of supported type called '%s'.", name);
-        return false;
-    }
-
-    out_resource->full_path = string_duplicate(full_file_path);
-
-    // The resource data is just an array of configs.
-    geometry_config* resource_data = (geometry_config*)darray_create(geometry_config);
-
-    b8 result = false;
-    switch (type) {
-        case MESH_FILE_TYPE_OBJ: {
-            // Generate the ksm filename.
-            char ksm_file_name[512];
-            string_format(ksm_file_name, "%s/%s/%s%s", resource_system_base_path(), self->type_path, name, ".ksm");
-            result = import_obj_file(&f, ksm_file_name, &resource_data);
-            break;
-        }
-        case MESH_FILE_TYPE_KSM:
-            result = load_ksm_file(&f, &resource_data);
-            break;
-        default:
-        case MESH_FILE_TYPE_NOT_FOUND:
-            KERROR("Unable to find mesh of supported type called '%s'.", name);
-            result = false;
-            break;
-    }
-
-    filesystem_close(&f);
-
-    if (!result) {
-        KERROR("Failed to process mesh file '%s'.", full_file_path);
-        darray_destroy(resource_data);
-        out_resource->data = 0;
-        out_resource->data_size = 0;
-        return false;
-    }
-
-    out_resource->data = resource_data;
-    // Use the data size as a count.
-    out_resource->data_size = darray_length(resource_data);
-
-    return true;
-}
-
-void mesh_loader_unload(struct resource_loader* self, resource* resource) {
-    u32 count = darray_length(resource->data);
-    for (u32 i = 0; i < count; ++i) {
-        geometry_config* config = &((geometry_config*)resource->data)[i];
-        geometry_system_config_dispose(config);
-    }
-    darray_destroy(resource->data);
-    resource->data = 0;
-    resource->data_size = 0;
-}
-
 b8 load_ksm_file(file_handle* ksm_file, geometry_config** out_geometries_darray) {
         // Version
     u64 bytes_read = 0;
@@ -872,13 +783,100 @@ b8 write_kmt_file(const char* mtl_file_path, material_config* config) {
     return true;
 }
 
-resource_loader mesh_resource_loader_create() {
-    resource_loader loader;
-    loader.type = RESOURCE_TYPE_MESH;
-    loader.custom_type = 0;
-    loader.load = mesh_loader_load;
-    loader.unload = mesh_loader_unload;
-    loader.type_path = "models";
+mesh_loader::mesh_loader()
+{
+    type = RESOURCE_TYPE_MESH;
+    custom_type = 0;
+    type_path = "models";
+}
 
-    return loader;
+b8 mesh_loader::load(const char* name, void* params, resource* out_resource)
+{
+    if (!name || !out_resource) {
+        return false;
+    }
+
+    char* format_str = (char*)"%s/%s/%s%s";
+    file_handle f;
+    // Supported extensions. Note that these are in order of priority when looked up.
+    // This is to prioritize the loading of a binary version of the mesh, followed by
+    // importing various types of meshes to binary types, which would be loaded on the
+    // next run.
+    // TODO: Might be good to be able to specify an override to always import (i.e. skip
+    // binary versions) for debug purposes.
+#define SUPPORTED_FILETYPE_COUNT 2
+    supported_mesh_filetype supported_filetypes[SUPPORTED_FILETYPE_COUNT];
+    supported_filetypes[0] = {(char*)".ksm", MESH_FILE_TYPE_KSM, true};
+    supported_filetypes[1] = {(char*)".obj", MESH_FILE_TYPE_OBJ, false};
+
+    char full_file_path[512];
+    mesh_file_type type = MESH_FILE_TYPE_NOT_FOUND;
+    // Try each supported extension.
+    for (u32 i = 0; i < SUPPORTED_FILETYPE_COUNT; ++i) {
+        string_format(full_file_path, format_str, resource_system::get_base_path(), type_path, name, supported_filetypes[i].extension);
+        // If the file exists, open it and stop looking.
+        if (filesystem_exists(full_file_path)) {
+            if (filesystem_open(full_file_path, FILE_MODE_READ, supported_filetypes[i].is_binary, &f)) {
+                type = supported_filetypes[i].type;
+                break;
+            }
+        }
+    }
+
+    if (type == MESH_FILE_TYPE_NOT_FOUND) {
+        KERROR("Unable to find mesh of supported type called '%s'.", name);
+        return false;
+    }
+
+    out_resource->full_path = string_duplicate(full_file_path);
+
+    // The resource data is just an array of configs.
+    geometry_config* resource_data = (geometry_config*)darray_create(geometry_config);
+
+    b8 result = false;
+    switch (type) {
+        case MESH_FILE_TYPE_OBJ: {
+            // Generate the ksm filename.
+            char ksm_file_name[512];
+            string_format(ksm_file_name, "%s/%s/%s%s", resource_system::get_base_path(), type_path, name, ".ksm");
+            result = import_obj_file(&f, ksm_file_name, &resource_data);
+            break;
+        }
+        case MESH_FILE_TYPE_KSM:
+            result = load_ksm_file(&f, &resource_data);
+            break;
+        default:
+        case MESH_FILE_TYPE_NOT_FOUND:
+            KERROR("Unable to find mesh of supported type called '%s'.", name);
+            result = false;
+            break;
+    }
+
+    filesystem_close(&f);
+
+    if (!result) {
+        KERROR("Failed to process mesh file '%s'.", full_file_path);
+        darray_destroy(resource_data);
+        out_resource->data = 0;
+        out_resource->data_size = 0;
+        return false;
+    }
+
+    out_resource->data = resource_data;
+    // Use the data size as a count.
+    out_resource->data_size = darray_length(resource_data);
+
+    return true;
+}
+
+void mesh_loader::unload(resource* resource)
+{
+    u32 count = darray_length(resource->data);
+    for (u32 i = 0; i < count; ++i) {
+        geometry_config* config = &((geometry_config*)resource->data)[i];
+        geometry_system_config_dispose(config);
+    }
+    darray_destroy(resource->data);
+    resource->data = 0;
+    resource->data_size = 0;
 }

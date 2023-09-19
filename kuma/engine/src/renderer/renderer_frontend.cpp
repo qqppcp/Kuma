@@ -152,29 +152,29 @@ b8 renderer_system_initialize(u64* memory_requirement, void* state, const char* 
 
     // Builtin skybox shader.
     CRITICAL_INIT(
-        resource_system_load(BUILTIN_SHADER_NAME_SKYBOX, RESOURCE_TYPE_SHADER, 0, &config_resource),
+        resource_system::load(BUILTIN_SHADER_NAME_SKYBOX, RESOURCE_TYPE_SHADER, 0, &config_resource),
         "Failed to load builtin skybox shader.");
     config = (shader_config*)config_resource.data;
     CRITICAL_INIT(shader_system_create(config), "Failed to load builtin skybox shader.");
-    resource_system_unload(&config_resource);
+    resource_system::unload(&config_resource);
     state_ptr->skybox_shader_id = shader_system_get_id(BUILTIN_SHADER_NAME_SKYBOX);
     
     // Builtin material shader.
     CRITICAL_INIT(
-        resource_system_load(BUILTIN_SHADER_NAME_MATERIAL, RESOURCE_TYPE_SHADER, 0, &config_resource),
+        resource_system::load(BUILTIN_SHADER_NAME_MATERIAL, RESOURCE_TYPE_SHADER, 0, &config_resource),
         "Failed to load builtin material shader.");
     config = (shader_config*)config_resource.data;
     CRITICAL_INIT(shader_system_create(config), "Failed to load builtin material shader.");
-    resource_system_unload(&config_resource);
+    resource_system::unload(&config_resource);
     state_ptr->material_shader_id = shader_system_get_id(BUILTIN_SHADER_NAME_MATERIAL);
 
     // Builtin UI shader.
     CRITICAL_INIT(
-        resource_system_load(BUILTIN_SHADER_NAME_UI, RESOURCE_TYPE_SHADER, 0, &config_resource),
+        resource_system::load(BUILTIN_SHADER_NAME_UI, RESOURCE_TYPE_SHADER, 0, &config_resource),
         "Failed to load builtin UI shader.");
     config = (shader_config*)config_resource.data;
     CRITICAL_INIT(shader_system_create(config), "Failed to load builtin UI shader.");
-    resource_system_unload(&config_resource);
+    resource_system::unload(&config_resource);
     state_ptr->ui_shader_id = shader_system_get_id(BUILTIN_SHADER_NAME_UI);
     
     return true;

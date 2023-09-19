@@ -2,9 +2,10 @@
 
 #include "systems/resource_system.h"
 
-/**
- * @brief Creates and returns a shader resource loader.
- * 
- * @return The newly created resource loader.
- */
-resource_loader shader_resource_loader_create();
+class shader_loader : public resource_loader
+{
+public:
+    shader_loader();
+    virtual b8 load(const char* name, void* params, resource* out_resource) override;
+    virtual void unload(resource* resource) override;
+};

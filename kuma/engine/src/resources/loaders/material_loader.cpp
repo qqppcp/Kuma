@@ -10,14 +10,22 @@
 #include "platform/filesystem.h"
 #include "loader_utils.h"
 
-b8 material_loader_load(struct resource_loader* self, const char* name, void* params, resource* out_resource) {
-    if (!self || !name || !out_resource) {
+material_loader::material_loader()
+{
+    type = RESOURCE_TYPE_MATERIAL;
+    custom_type = 0;
+    type_path = "materials";
+}
+
+b8 material_loader::load(const char* name, void* params, resource* out_resource)
+{
+    if (!name || !out_resource) {
         return false;
     }
 
     char* format_str = (char*)"%s/%s/%s%s";
     char full_file_path[512];
-    string_format(full_file_path, format_str, resource_system_base_path(), self->type_path, name, ".kmt");
+    string_format(full_file_path, format_str, resource_system::get_base_path(), type_path, name, ".kmt");
 
     file_handle f;
     if (!filesystem_open(full_file_path, FILE_MODE_READ, false, &f)) {
@@ -120,21 +128,10 @@ b8 material_loader_load(struct resource_loader* self, const char* name, void* pa
     return true;
 }
 
-void material_loader_unload(struct resource_loader* self, resource* resource)
+void material_loader::unload(resource* resource)
 {
-    if (!resource_unload(self, resource, MEMORY_TAG_MATERIAL_INSTANCE))
+    if (!resource_unload(resource, MEMORY_TAG_MATERIAL_INSTANCE))
     {
-        KWARN("material_loader_unload called with nullptr for self or resource.");
+        KWARN("material_loader_unload called with nullptr for resource.");
     }
-}
-
-resource_loader material_resource_loader_create() {
-    resource_loader loader;
-    loader.type = RESOURCE_TYPE_MATERIAL;
-    loader.custom_type = 0;
-    loader.load = material_loader_load;
-    loader.unload = material_loader_unload;
-    loader.type_path = "materials";
-
-    return loader;
 }

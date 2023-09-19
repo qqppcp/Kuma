@@ -234,9 +234,9 @@ b8 application_create(game* game_inst) {
     resource_system_config resource_sys_config;
     resource_sys_config.asset_base_path = (char*)"D:/Dev/Kuma++/code/kuma/assets";
     resource_sys_config.max_loader_count = 32;
-    resource_system_initialize(&app_state->resource_system_memory_requirement, 0, resource_sys_config);
+    resource_system::initialize(&app_state->resource_system_memory_requirement, 0, resource_sys_config);
     app_state->resource_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->resource_system_memory_requirement);
-    if (!resource_system_initialize(&app_state->resource_system_memory_requirement, app_state->resource_system_state, resource_sys_config)) {
+    if (!resource_system::initialize(&app_state->resource_system_memory_requirement, app_state->resource_system_state, resource_sys_config)) {
         KFATAL("Failed to initialize resource system. Aborting application.");
         return false;
     }
@@ -721,7 +721,7 @@ b8 application_run() {
     
     renderer_system_shutdown(app_state->renderer_system_state);
     
-    resource_system_shutdown(app_state->resource_system_state);
+    resource_system::shutdown(app_state->resource_system_state);
 
     job_system_shutdown(app_state->job_system_state);
     

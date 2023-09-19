@@ -2,4 +2,10 @@
 
 #include "systems/resource_system.h"
 
-resource_loader image_resource_loader_create();
+class image_loader : public resource_loader
+{
+public:
+    image_loader();
+    virtual b8 load(const char* name, void* params, resource* out_resource) override;
+    virtual void unload(resource* resource) override;
+};

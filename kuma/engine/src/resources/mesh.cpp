@@ -34,7 +34,7 @@ void mesh_load_job_success(void* params) {
 
     KTRACE("Successfully loaded mesh '%s'.", mesh_params->resource_name);
 
-    resource_system_unload(&mesh_params->mesh_resource);
+    resource_system::unload(&mesh_params->mesh_resource);
 }
 
 /**
@@ -47,7 +47,7 @@ void mesh_load_job_fail(void* params) {
 
     KERROR("Failed to load mesh '%s'.", mesh_params->resource_name);
 
-    resource_system_unload(&mesh_params->mesh_resource);
+    resource_system::unload(&mesh_params->mesh_resource);
 }
 
 /**
@@ -59,7 +59,7 @@ void mesh_load_job_fail(void* params) {
  */
 b8 mesh_load_job_start(void* params, void* result_data) {
     mesh_load_params* load_params = (mesh_load_params*)params;
-    b8 result = resource_system_load(load_params->resource_name, RESOURCE_TYPE_MESH, 0, &load_params->mesh_resource);
+    b8 result = resource_system::load(load_params->resource_name, RESOURCE_TYPE_MESH, 0, &load_params->mesh_resource);
 
     // NOTE: The load params are also used as the result data here, only the mesh_resource field is populated now.
     KMemory::copy_memory(result_data, load_params, sizeof(mesh_load_params));

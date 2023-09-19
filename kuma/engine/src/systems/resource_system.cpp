@@ -4,6 +4,7 @@
 #include "core/kstring.h"
 
 // Known resource loaders.
+#include "containers/darray.h"
 #include "resources/loaders/text_loader.h"
 #include "resources/loaders/binary_loader.h"
 #include "resources/loaders/image_loader.h"
@@ -11,22 +12,16 @@
 #include "resources/loaders/shader_loader.h"
 #include "resources/loaders/mesh_loader.h"
 
-typedef struct resource_system_state {
-    resource_system_config config;
-    resource_loader* registered_loaders;
-} resource_system_state;
+resource_system::resource_system_state* resource_system::state_ptr = 0;
 
-static resource_system_state* state_ptr = 0;
-
-b8 load(const char* name, resource_loader* loader, void* params, resource* out_resource);
-
-b8 resource_system_initialize(u64* memory_requirement, void* state, resource_system_config config) {
+b8 resource_system::initialize(u64* memory_requirement, void* state, resource_system_config config)
+{
     if (config.max_loader_count == 0) {
         KFATAL("resource_system_initialize failed because config.max_loader_count==0.");
         return false;
     }
 
-    *memory_requirement = sizeof(resource_system_state) + (sizeof(resource_loader) * config.max_loader_count);
+    *memory_requirement = sizeof(resource_system_state);
 
     if (!state) {
         return true;
@@ -35,70 +30,88 @@ b8 resource_system_initialize(u64* memory_requirement, void* state, resource_sys
     state_ptr = static_cast<resource_system_state*>(state);
     state_ptr->config = config;
 
-    void* array_block = (char*)state + sizeof(resource_system_state);
-    state_ptr->registered_loaders = static_cast<resource_loader*>(array_block);
-
-    // Invalidate all loaders
-    u32 count = config.max_loader_count;
-    for (u32 i = 0; i < count; ++i) {
-        state_ptr->registered_loaders[i].id = INVALID_ID;
+    state_ptr->loader_num = 0;
+    for (int i = 0; i < 32; i++)
+    {
+        state_ptr->registered_loaders[i] = nullptr;
     }
-
+    
     // NOTE: Auto-register known loader types here.
-    resource_system_register_loader(text_resource_loader_create());
-    resource_system_register_loader(binary_resource_loader_create());
-    resource_system_register_loader(image_resource_loader_create());
-    resource_system_register_loader(material_resource_loader_create());
-    resource_system_register_loader(shader_resource_loader_create());
-    resource_system_register_loader(mesh_resource_loader_create());
+    auto _text_loader     = new text_loader;
+    auto _binary_loader   = new binary_loader;
+    auto _image_loader    = new image_loader;
+    auto _material_loader = new material_loader;
+    auto _shader_loader   = new shader_loader;
+    auto _mesh_loader     = new mesh_loader;
+    register_loader(_text_loader);
+    register_loader(_binary_loader);
+    register_loader(_image_loader);
+    register_loader(_material_loader);
+    register_loader(_shader_loader);
+    register_loader(_mesh_loader);
 
     KINFO("Resource system initialized with base path '%s'.", config.asset_base_path);
 
     return true;
 }
 
-void resource_system_shutdown(void* state) {
+void resource_system::shutdown(void* state)
+{
     if (state_ptr) {
+        
         state_ptr = 0;
     }
 }
 
-b8 resource_system_register_loader(resource_loader loader) {
+b8 resource_system::register_loader(resource_loader* loader)
+{
     if (state_ptr) {
-        u32 count = state_ptr->config.max_loader_count;
+        
         // Ensure no loaders for the given type already exist
-        for (u32 i = 0; i < count; ++i) {
-            resource_loader* l = &state_ptr->registered_loaders[i];
-            if (l->id != INVALID_ID) {
-                if (l->type == loader.type) {
-                    KERROR("resource_system_register_loader - Loader of type %d already exists and will not be registered.", loader.type);
+        for (u32 i = 0; i < 32; ++i) {
+            resource_loader* l = state_ptr->registered_loaders[i];
+            if (l && l->id != INVALID_ID) {
+                if (l->type == loader->type) {
+                    KERROR("resource_system_register_loader - Loader of type %d already exists and will not be registered.", loader->type);
                     return false;
-                } else if (loader.custom_type && string_length(loader.custom_type) > 0 && strings_equali(l->custom_type, loader.custom_type)) {
-                    KERROR("resource_system_register_loader - Loader of custom type %s already exists and will not be registered.", loader.custom_type);
+                } else if (loader->custom_type && string_length(loader->custom_type) > 0 && strings_equali(l->custom_type, loader->custom_type)) {
+                    KERROR("resource_system_register_loader - Loader of custom type %s already exists and will not be registered.", loader->custom_type);
                     return false;
                 }
             }
         }
-        for (u32 i = 0; i < count; ++i) {
-            if (state_ptr->registered_loaders[i].id == INVALID_ID) {
-                state_ptr->registered_loaders[i] = loader;
-                state_ptr->registered_loaders[i].id = i;
+        for (u32 i = 0; i < 32; ++i) {
+            resource_loader* l = state_ptr->registered_loaders[i];
+            if (l && l->id == INVALID_ID)
+            {
+                l = loader;
+                l->id = i;
                 KTRACE("Loader registered.");
                 return true;
             }
         }
+        
+        loader->id = state_ptr->loader_num;
+        state_ptr->registered_loaders[loader->id] = loader;
+        state_ptr->loader_num++;
     }
 
+    for (int i = 0; i < state_ptr->loader_num;++i)
+    {
+        auto l = state_ptr->registered_loaders[i];
+        b8 s = l->type == RESOURCE_TYPE_MESH;
+    }
     return false;
 }
 
-b8 resource_system_load(const char* name, resource_type type, void* params, resource* out_resource) {
+b8 resource_system::load(const char* name, resource_type type, void* params, resource* out_resource)
+{
     if (state_ptr && type != RESOURCE_TYPE_CUSTOM) {
         // Select loader.
         u32 count = state_ptr->config.max_loader_count;
-        for (u32 i = 0; i < count; ++i) {
-            resource_loader* l = &state_ptr->registered_loaders[i];
-            if (l->id != INVALID_ID && l->type == type) {
+        for (u32 i = 0; i < 32; ++i) {
+            resource_loader* l = state_ptr->registered_loaders[i];
+            if (l && l->id != INVALID_ID && l->type == type) {
                 return load(name, l, params, out_resource);
             }
         }
@@ -109,13 +122,14 @@ b8 resource_system_load(const char* name, resource_type type, void* params, reso
     return false;
 }
 
-b8 resource_system_load_custom(const char* name, const char* custom_type, void* params, resource* out_resource) {
+b8 resource_system::load_custom(const char* name, const char* custom_type, void* params, resource* out_resource)
+{
     if (state_ptr && custom_type && string_length(custom_type) > 0) {
         // Select loader.
         u32 count = state_ptr->config.max_loader_count;
-        for (u32 i = 0; i < count; ++i) {
-            resource_loader* l = &state_ptr->registered_loaders[i];
-            if (l->id != INVALID_ID && l->type == RESOURCE_TYPE_CUSTOM && strings_equali(l->custom_type, custom_type)) {
+        for (u32 i = 0; i < 32; ++i) {
+            resource_loader* l = state_ptr->registered_loaders[i];
+            if (l && l->id != INVALID_ID && l->type == RESOURCE_TYPE_CUSTOM && strings_equali(l->custom_type, custom_type)) {
                 return load(name, l, params, out_resource);
             }
         }
@@ -126,18 +140,20 @@ b8 resource_system_load_custom(const char* name, const char* custom_type, void* 
     return false;
 }
 
-void resource_system_unload(resource* resource) {
+void resource_system::unload(resource* resource)
+{
     if (state_ptr && resource) {
         if (resource->loader_id != INVALID_ID) {
-            resource_loader* l = &state_ptr->registered_loaders[resource->loader_id];
-            if (l->id != INVALID_ID && l->unload) {
-                l->unload(l, resource);
+            resource_loader* l = state_ptr->registered_loaders[resource->loader_id];
+            if (l->id != INVALID_ID) {
+                l->unload(resource);
             }
         }
     }
 }
 
-const char* resource_system_base_path() {
+const char* resource_system::get_base_path()
+{
     if (state_ptr) {
         return state_ptr->config.asset_base_path;
     }
@@ -146,8 +162,9 @@ const char* resource_system_base_path() {
     return "";
 }
 
-b8 load(const char* name, resource_loader* loader, void* params, resource* out_resource) {
-    if (!name || !loader || !loader->load || !out_resource) {
+b8 resource_system::load(const char* name, resource_loader* loader, void* params, resource* out_resource)
+{
+    if (!name || !loader || !out_resource) {
         if (out_resource) {
             out_resource->loader_id = INVALID_ID;
         }
@@ -155,5 +172,5 @@ b8 load(const char* name, resource_loader* loader, void* params, resource* out_r
     }
 
     out_resource->loader_id = loader->id;
-    return loader->load(loader, name, params, out_resource);
+    return loader->load(name, params, out_resource);
 }
