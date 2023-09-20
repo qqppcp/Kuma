@@ -28,3 +28,4 @@ hooks/
 # Auto saves
 *.auto
 
+**.spv
